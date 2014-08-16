@@ -1,14 +1,42 @@
 #pragma once
 #define POINT int*
+#define __STDC_FORMAT_MACROS
+#define u64 uint64_t //unsigned char
 
 
-class FiniteFieldFP
+#include <inttypes.h>
+#include <stdint.h>
+
+#include <cmath>
+#include <vector>
+#include <cassert>
+#include <random>
+
+using namespace std;
+class FiniteFieldPoint
 {
 public:
-	FiniteFieldFP(int, int , int , POINT, int , int);
-	~FiniteFieldFP();
+    FiniteFieldPoint(u64, u64, int);
+    FiniteFieldPoint(int, vector<u64>);
+    FiniteFieldPoint(int);
+    FiniteFieldPoint();
+    ~FiniteFieldPoint();
 
-	const int p,a,b,n,h;
-	const POINT G;
+
+    static void FiniteFieldPoint::add(const FiniteFieldPoint&, const FiniteFieldPoint&, FiniteFieldPoint&);
+
+    void init(int);
+
+    int fieldSize;
+    u64* num;
+    
+
+    void print64();
+    void randomize64();
+    void print16();
+    void randomize16();
 };
+
+
+
 
