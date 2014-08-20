@@ -1,154 +1,178 @@
 #include "FiniteFields.h"
 #include <string.h>     /* strcat */
 
-FiniteField::FiniteField(int fieldSize, vector<u64> num){
 
 
-    this->fieldSize = fieldSize;
+template<class T>
+FiniteField<T>::FiniteField(int bitCount){
 
-    assert(fieldSize >= num.size());
+    mWordCount = bitCount / (sizeof(T) * 8);
+    if (mWordCount * (sizeof(T)* 8) < bitCount) mWordCount++;
 
-    this->num = (u64*)calloc(fieldSize, sizeof(u64));
+    mBitCount = bitCount;
 
-    for (int i = 0; i < num.size(); i++){
-        this->num[i] = num[i];
-    }
-
-}
-FiniteField::FiniteField(int fieldSize){
-
-    this->fieldSize = fieldSize;
-    this->num = (u64*)calloc(fieldSize, sizeof(u64));
+    this->num = (T*)calloc(mWordCount, sizeof(T));
 
 }
 
-FiniteField::~FiniteField(){
+template<class T>
+FiniteField<T>::~FiniteField(){
     if (num != nullptr)
         free(num);
 }
 
-void FiniteField::init(int fieldSize){
-    if (num == nullptr)
-        free(num);
+template<class T>
+void FiniteField<T>::addC2(FiniteField<T>& p1, FiniteField<T>& p2, FiniteField<T>& out){
 
-    this->fieldSize = fieldSize;
-    this->num = (u64*)calloc(fieldSize, sizeof(u64));
-}
+    assert(p1.mWordCount == p2.mWordCount);
 
-FiniteField::FiniteField(){
-
-    this->fieldSize = 0;
-    this->num = nullptr;
-}
-
-
-
-void FiniteField::addC2(FiniteField& p1, FiniteField& p2, FiniteField& out){
-
-	assert(p1.fieldSize == p2.fieldSize);
-	u64 carry = 0, t1;
-
-	if (out.fieldSize < p1.fieldSize)
-		out.init(p1.fieldSize);
-
-	for (int i = 0; i < p1.fieldSize; i++){
-		out.num[i] = p1.num[i] ^ p2.num[i];		
-	}
-}
-
-void FiniteField::addC10( FiniteField& p1,  FiniteField& p2, FiniteField& out){
-    
-    assert(p1.fieldSize == p2.fieldSize);
-    
-    if (out.fieldSize < p1.fieldSize)
-        out.init(p1.fieldSize);
-        
-    u64 carry = 0, t1;
-
-    for (int i = 0; i < p1.fieldSize; i++){
-        t1 = p1.num[i];
-
-        out.num[i] += p1.num[i] + p2.num[i];
-
-        if (( out.num[i] < t1 ||( carry && out.num[i] == t1 )  ) && i + 1 < p1.fieldSize ){
-            // carry. 
-            carry = 1;
-            out.num[i+1]++;
-        }
-        else{
-            carry = 0;
-        }
-        
+    for (int i = 0; i < p1.mWordCount; i++){
+        out.num[i] = p1.num[i] ^ p2.num[i];		
     }
 }
 
-void FiniteField::multiplyC2(FiniteField& p1, FiniteField& p2, FiniteField& out){
+
+template<class T>
+void FiniteField<T>::operator<<=(const int& shifts){
+
+    assert(shifts < sizeof(T)* 8);
+
+    T shiftIn;
+    for (int i = mWordCount - 1; i > 0; i--){
+        num[i] <<= shifts;
+
+        shiftIn = num[i - 1] >> (sizeof(T)* 8 - shifts);
+
+        num[i] ^= shiftIn;
+    }
+
+    num[0] <<= shifts;
+}
+
+template<class T>
+void FiniteField<T>::operator>>=(const int& shifts){
+    
+    assert(shifts < sizeof(T)* 8);
+
+    T shiftIn;
+    for (int i = 0; i < mWordCount -1; i++){
+        num[i] >>= shifts;
+
+        shiftIn = num[i + 1] << (sizeof(T) * 8 - shifts);
+
+        num[i] ^= shiftIn;
+    }
+    num[mWordCount - 1] >>= shifts;
+}
+
+template<class T>
+void FiniteField<T>::multiplyC2(FiniteField<T>& p1, FiniteField<T>& p2, FiniteField<T>& out){
+
+    FiniteField<T> tempProd(p1.mBitCount * 2);
+    FiniteField<T> doubleP1(p1.mBitCount * 2);
+    FiniteField<T> p2Copy(p2.mBitCount);
+
+    for (int i = 0; i < p1.mWordCount; i++){
+        doubleP1.num[i] = p1.num[i];
+        p2Copy.num[i] = p2.num[i];
+    }
+
+    T mask = 1;
+    for (int i = 0; i < p1.mBitCount; i++){
+        
+
+        if (p2Copy.num[0] & 1){
+            //tempProd ^= doubleP1;
+            addC2(tempProd, doubleP1, tempProd);
+            /*for (int j = p1.mBitCount; j > i; j--)
+            p1.bitPrint();*/
+            printf(" ");
+            doubleP1.bitPrint();
+            printf("\t");
+
+            p2Copy.bitPrint();
+        }
+        else{
+            printf("\t\t\t\t\t");
+
+                p2Copy.bitPrint();
+        }
+        printf("\n");
+        doubleP1 <<= 1;
+        p2Copy >>= 1;
+    }
+    printf("^___________________________________________________\n ");
+    tempProd.bitPrint();
 
 
 
 }
 
-void FiniteField::print64(){
 
-    for (int i = fieldSize - 1; i >= 0 ; i--){
+//const char *byte_to_binary(int x)
+//{
+//    static char b[30];
+//    b[0] = '\0';
+//
+//    for (int z = 128 ; z > 0; z >>= 1)
+//    {
+//        strcat_s(b, ((x & z) == z) ? "1" : "0");
+//
+//    }
+//
+//    return b;
+//}
+
+
+template<class T>
+void FiniteField<T>::bitPrint(){
+
+    for (int i = mWordCount - 1; i >= 0; i--){
+
+        for (int j = sizeof(T)-1; j >= 0; j--){
+
+            
+            uint8_t  bt = *(((uint8_t*)&num[i]) + j);
+
+            char b[9];
+            b[0] = '\0';
+            for (int z = 128; z > 0; z >>= 1)
+            {
+                strcat_s(b, ((bt & z) == z) ? "1" : "0");
+
+            }
+            printf("%s", b);
+        }
+    }
+    printf("'");
+}
+
+
+template<class T>
+void FiniteField<T>::print(){
+
+    for (int i = mWordCount - 1; i >= 0 ; i--){
         printf("%016llx ", num[i] );
     }
     printf("`\n");
 }
-const char *byte_to_binary(int x)
-{
-    static char b[30];
-    b[0] = '\0';
 
-    int z;
-    for (z = 128*128*2; z > 0; z >>= 1)
-    {
-        strcat_s(b, ((x & z) == z) ? "1" : "0");
-        
-    }
 
-    return b;
-}
-void FiniteField::randomize64(){
 
-    static std::default_random_engine generator;
-    static std::uniform_int_distribution<u64> distribution(0, (u64)-1);
+template<class T>
+void FiniteField<T>::randomize(){
 
-    printf("maxRand %x\n", RAND_MAX);
-    for (int i = 0; i < fieldSize; i++){
-        /*unsigned int r0 = rand();
-        unsigned int r1 = rand();
-        unsigned int r2 = rand();
-        unsigned int r3 = rand();
+    //static std::default_random_engine generator;
+    //static std::uniform_int_distribution<T> distribution(0, (T)-1);
 
-        printf("r0 %04x : %s\n", r0, byte_to_binary(r0));
-        printf("r1 %04x : %s\n", r1, byte_to_binary(r1));
-        printf("r2 %04x : %s\n", r2, byte_to_binary(r2));
-        printf("r3 %04x : %s\n", r3, byte_to_binary(r3));
+    for (int i = 0; i < mWordCount; i++){
 
-        u64 n = ((((u64)r3 << 48) | (u64)r2 << 32) | (u64)r1 << 16) | r0;*/
-
-        u64 n = distribution(generator);
+        //T n = distribution(generator);
+        T n = (T)rand();
         num[i] = n;
 
     }
 }
 
-void FiniteField::print16(){
-    for (int i = fieldSize - 1; i >= 0; i--){
-
-        printf("%02x ", num[i]);
-    }
-    printf("`\n");
-}
-
-void FiniteField::randomize16(){
-    for (u64 i = 0; i < fieldSize; i++){
-
-        char n = (char)rand();
-        num[i] = n;
-
-    }
-}
 
 

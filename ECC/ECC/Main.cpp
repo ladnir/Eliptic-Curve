@@ -1,22 +1,20 @@
-#include "FiniteFields.h"
+#include "FiniteFields.cpp"
 #include <random>
 
+#include <stdint.h>
 
 
 int main(int argc, char* argv){
         
     
-    auto ffp1 = FiniteField(4);
-    auto ffp2 = FiniteField(4);
-    auto ffp3 = FiniteField(4);
+    FiniteField<unsigned char> ffp1(16);
+    FiniteField<unsigned char> ffp2(16);
+    FiniteField<unsigned char> ffp3(16);
 
-    ffp1.randomize64();
-    ffp2.randomize64();
-    ffp1.print64();
-    ffp2.print64();
+    ffp1.randomize();
+    ffp2.randomize();
 
-    FiniteField::add(ffp1,ffp2,ffp3);
+    FiniteField<unsigned char>::multiplyC2(ffp1, ffp2, ffp3);
 
-    ffp3.print64();
     return 1;
 }
