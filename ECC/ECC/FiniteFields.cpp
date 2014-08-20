@@ -1,7 +1,7 @@
 #include "FiniteFields.h"
 #include <string.h>     /* strcat */
 
-FiniteFieldPoint::FiniteFieldPoint(int fieldSize, vector<u64> num){
+FiniteField::FiniteField(int fieldSize, vector<u64> num){
 
 
     this->fieldSize = fieldSize;
@@ -15,34 +15,48 @@ FiniteFieldPoint::FiniteFieldPoint(int fieldSize, vector<u64> num){
     }
 
 }
-FiniteFieldPoint::FiniteFieldPoint(int fieldSize){
+FiniteField::FiniteField(int fieldSize){
 
     this->fieldSize = fieldSize;
     this->num = (u64*)calloc(fieldSize, sizeof(u64));
 
 }
 
-FiniteFieldPoint::~FiniteFieldPoint(){
+FiniteField::~FiniteField(){
     if (num != nullptr)
         free(num);
 }
 
-void FiniteFieldPoint::init(int fieldSize){
+void FiniteField::init(int fieldSize){
     if (num == nullptr)
         free(num);
-
 
     this->fieldSize = fieldSize;
     this->num = (u64*)calloc(fieldSize, sizeof(u64));
 }
 
-FiniteFieldPoint::FiniteFieldPoint(){
+FiniteField::FiniteField(){
 
     this->fieldSize = 0;
     this->num = nullptr;
 }
 
-void FiniteFieldPoint::add(const FiniteFieldPoint& p1, const FiniteFieldPoint& p2, FiniteFieldPoint& out){
+
+
+void FiniteField::addC2(FiniteField& p1, FiniteField& p2, FiniteField& out){
+
+	assert(p1.fieldSize == p2.fieldSize);
+	u64 carry = 0, t1;
+
+	if (out.fieldSize < p1.fieldSize)
+		out.init(p1.fieldSize);
+
+	for (int i = 0; i < p1.fieldSize; i++){
+		out.num[i] = p1.num[i] ^ p2.num[i];		
+	}
+}
+
+void FiniteField::addC10( FiniteField& p1,  FiniteField& p2, FiniteField& out){
     
     assert(p1.fieldSize == p2.fieldSize);
     
@@ -68,7 +82,13 @@ void FiniteFieldPoint::add(const FiniteFieldPoint& p1, const FiniteFieldPoint& p
     }
 }
 
-void FiniteFieldPoint::print64(){
+void FiniteField::multiplyC2(FiniteField& p1, FiniteField& p2, FiniteField& out){
+
+
+
+}
+
+void FiniteField::print64(){
 
     for (int i = fieldSize - 1; i >= 0 ; i--){
         printf("%016llx ", num[i] );
@@ -89,7 +109,7 @@ const char *byte_to_binary(int x)
 
     return b;
 }
-void FiniteFieldPoint::randomize64(){
+void FiniteField::randomize64(){
 
     static std::default_random_engine generator;
     static std::uniform_int_distribution<u64> distribution(0, (u64)-1);
@@ -114,7 +134,7 @@ void FiniteFieldPoint::randomize64(){
     }
 }
 
-void FiniteFieldPoint::print16(){
+void FiniteField::print16(){
     for (int i = fieldSize - 1; i >= 0; i--){
 
         printf("%02x ", num[i]);
@@ -122,7 +142,7 @@ void FiniteFieldPoint::print16(){
     printf("`\n");
 }
 
-void FiniteFieldPoint::randomize16(){
+void FiniteField::randomize16(){
     for (u64 i = 0; i < fieldSize; i++){
 
         char n = (char)rand();

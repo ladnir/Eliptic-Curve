@@ -13,17 +13,20 @@
 #include <random>
 
 using namespace std;
-class FiniteFieldPoint
+class FiniteField
 {
 public:
-    FiniteFieldPoint(u64, u64, int);
-    FiniteFieldPoint(int, vector<u64>);
-    FiniteFieldPoint(int);
-    FiniteFieldPoint();
-    ~FiniteFieldPoint();
+    FiniteField(u64, u64, int);
+    FiniteField(int, vector<u64>);
+    FiniteField(int);
+    FiniteField();
+    ~FiniteField();
 
+	static void FiniteField::addC2(FiniteField&, FiniteField&, FiniteField&);
+	static void FiniteField::addC10(FiniteField&, FiniteField&, FiniteField&);
 
-    static void FiniteFieldPoint::add(const FiniteFieldPoint&, const FiniteFieldPoint&, FiniteFieldPoint&);
+	static void FiniteField::multiplyC2(FiniteField&, FiniteField&, FiniteField&);
+
 
     void init(int);
 
