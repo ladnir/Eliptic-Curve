@@ -1,10 +1,12 @@
 #include "FiniteFields.h"
 #include <string.h>     /* strcat */
 
-
+template<class T>
+FiniteField<T>* FiniteField<T>::irrPoly = nullptr;
 
 template<class T>
 FiniteField<T>::FiniteField(int bitCount){
+
 
     mWordCount = bitCount / (sizeof(T) * 8);
     if (mWordCount * (sizeof(T)* 8) < bitCount) mWordCount++;
@@ -103,18 +105,35 @@ void FiniteField<T>::multiplyC2(FiniteField<T>& p1, FiniteField<T>& p2, FiniteFi
     }
     printf("^___________________________________________________\n ");
     tempProd.bitPrint();
+    printf("\n\n");
+
+    modulus(tempProd, p1.getIrrPoly());
 
 
-
+    printf("^___________________________________________________\n ");
+    tempProd.bitPrint();
+    printf("\n\n");
 }
 
+template<class T>
+FiniteField<T>& FiniteField<T>::getIrrPoly(){
+
+    if (FiniteField<T>::irrPoly == nullptr){
+        FiniteField<T>::irrPoly = new FiniteField<T>(mBitCount);
+        for (int i = 0; i < mWordCount; i++){
+            irrPoly->num[i] = (T) i * 3 + 4;
+        }
+    }
+
+    return *FiniteField<T>::irrPoly;
+}
 
 //const char *byte_to_binary(int x)
 //{
 //    static char b[30];
 //    b[0] = '\0';
 //
-//    for (int z = 128 ; z > 0; z >>= 1)
+//    for (int z = 128; z > 0; z >>= 1)
 //    {
 //        strcat_s(b, ((x & z) == z) ? "1" : "0");
 //
@@ -122,6 +141,81 @@ void FiniteField<T>::multiplyC2(FiniteField<T>& p1, FiniteField<T>& p2, FiniteFi
 //
 //    return b;
 //}
+
+template<class T>
+void FiniteField<T>::modulus(FiniteField<T>& element, const FiniteField<T>& mod){
+    
+    T mask = ((T)1) << (sizeof(T)*8 -1 );
+
+    //FiniteField<T> elemShift(element.mBitCount);
+    //for (int i = 0;i<element.mWordCount;i++) 
+    //    elemShift.num[i] = element.num[i];
+    //
+
+    FiniteField<T> modShift(element.mBitCount);
+    for (int i = 0; i < mod.mWordCount; i++)
+        modShift.num[i] = (T)3 * i + 4;
+    
+
+    printf(" ");
+    int shifts = 0;
+    // shift the modulus to have it's most significant 1  in the MSB position.
+    while ((modShift.num[modShift.mWordCount - 1] & mask) == 0){
+        modShift <<= 1;
+        //modShift.bitPrint();
+        //printf("\n");
+        shifts++;
+    }
+    
+
+    for (int wordIdx = element.mWordCount - 1; wordIdx >=0 && shifts; wordIdx--){
+
+        mask = ((T)1) << (sizeof(T)* 8 - 1);
+
+        for (int bitIdx = sizeof(T)* 8; bitIdx >= 0 && shifts; wordIdx--, shifts--){
+            if (element.num[wordIdx] & mask){
+                {
+                    unsigned char x = mask;
+                    static char b[30];
+                    b[0] = '\0';
+
+                    for (int z = 128; z > 0; z >>= 1)
+                    {
+                        strcat_s(b, ((x & z) == z) ? "1" : "0");
+
+                    }
+                    printf("\n ");
+                    element.bitPrint();
+                    printf("\n %s \n--", b);
+                }
+                printf("\n^");
+                modShift.bitPrint();
+                //element ^= modShift;
+                addC2(element, modShift, element);
+                printf("\n ");
+                element.bitPrint();
+            }
+            else{
+                printf("\n");
+            }
+
+            mask >>=1;
+            modShift>>=1;
+        }
+    }
+
+    T* remainder = (T*)malloc(mod.mWordCount * sizeof(T));
+    for (int i = 0; i < mod.mWordCount; i++)
+        remainder[i] = element.num[i];
+    
+    delete element.num;
+
+    element.num = remainder;
+}
+
+
+
+
 
 
 template<class T>

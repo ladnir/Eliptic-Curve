@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 template<class T>
 class FiniteField
 {
@@ -19,26 +20,27 @@ public:
     FiniteField(int);
     ~FiniteField();
 
+    FiniteField<T>& getIrrPoly();
 
     static void addC2(FiniteField<T>&, FiniteField<T>&, FiniteField<T>&);
-
     static void multiplyC2(FiniteField<T>&, FiniteField<T>&, FiniteField<T>&);
-
-    T getBit(int);
+    static void modulus(FiniteField<T>&, const FiniteField<T>&);
 
     void operator<<=(const int&);
     void operator>>=(const int&);
 
-    void init(int);
 
-    int mWordCount;
-    int mBitCount;
-    T* num;
-    
+
     void bitPrint();
     void print();
 
     void randomize();
+    
+    static FiniteField<T>* irrPoly;
+
+    int mWordCount;
+    int mBitCount;
+    T* num;
 };
 
 
