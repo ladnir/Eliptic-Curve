@@ -11,8 +11,8 @@
 #include <cassert>
 #include <random>
 
-using namespace std;
 
+using namespace std;
 
 template<class T>
 class FiniteField

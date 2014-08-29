@@ -1,4 +1,5 @@
-#include "FiniteFields.h"
+//#include "FiniteFields.h"
+#include "BitIterator.cpp"
 #include <string.h>     /* strcat */
 
 #include <windows.h> // WinApi header
@@ -135,24 +136,10 @@ void FiniteField<T>::multiply(const FiniteField<T>& multiplicand,
 
 
     FiniteField<T>&  tempMod = getIrrPoly(multiplicand.mBitCount);
+	FiniteField<T> quotient(product.mBitCount);
+	division(tempProd, tempMod, quotient, product);
 
-
-    modulus(tempProd, tempMod);
-
-
-    printf("\n^___________________________________________________\n ");
-    printf("                  ");
-    tempProd.bitPrint();  
-    printf("  % ");
-    tempMod.bitPrint();
-    printf("\n\n");
-
-    for (int i = 0; i < tempProd.mWordCount; i++)
-    {
-        product(i) = tempProd(i);
-    }
-    //product.mBitCount = tempProd.mBitCount;
-    //product.mWordCount = tempProd.mWordCount;
+	product.bitPrint();
 }
 
 template<class T>
@@ -164,24 +151,11 @@ FiniteField<T>& FiniteField<T>::getIrrPoly(int bitCount){
     }
 
     // set top bit.
-    irrPoly->num[irrPoly->mWordCount - 1] = (T)-1;
+	irrPoly->num[irrPoly->mWordCount - 1] = (T)-1;
+	irrPoly->num[irrPoly->mWordCount - 2] = (T)-1;
 
     return *irrPoly;
 }
-
-//const char *byte_to_binary(int x)
-//{
-//    static char b[30];
-//    b[0] = '\0';
-//
-//    for (int z = 128; z > 0; z >>= 1)
-//    {
-//        strcat_s(b, ((x & z) == z) ? "1" : "0");
-//
-//    }
-//
-//    return b;
-//}
 
 template<class T>
 void FiniteField<T>::clear()
@@ -194,8 +168,8 @@ void FiniteField<T>::clear()
 template<class T>
 void FiniteField<T>::modulus(FiniteField<T>& m, const FiniteField<T>& divisor){
     
-    FiniteField<T> quotient = FiniteField<T>(divisor.mBitCount);
-    FiniteField<T> remainder = FiniteField<T>(divisor.mBitCount);
+    FiniteField<T> quotient(divisor.mBitCount);
+    FiniteField<T> remainder(divisor.mBitCount);
 
     division(m, divisor, quotient, remainder);
 
@@ -226,79 +200,87 @@ void FiniteField<T>::division(const FiniteField<T>& dividend,
                                     FiniteField<T>& quotient , 
                                     FiniteField<T>& remainder)
 {
-    T mask = ((T)1) << (sizeof(T)* 8 - 1);
-    printf("division\n  ");
-    dividend.bitPrint();
-    printf("\n/ ");
-    divisor.bitPrint();
+	assert(!divisor.isZero() && "Divide by zero error.");
+    quotient.clear();
+	if (dividend.isZero()){
+		remainder.clear();
+		return;
+	}
 
+	int dividendLeadingZeros = 0;
+	int divisorLeadingZeros = 0;
+    int shifts = 0;
 
-    FiniteField<T> addShift(divisor.mBitCount);
     FiniteField<T> accumulator(dividend);
     FiniteField<T> divisorShift(dividend.mBitCount);
+
+	BitIterator<T> quotientBI(quotient);
+	BitIterator<T> accumulatorBI(accumulator);
+	BitIterator<T> divisorBI(divisor);
 
     for (int i = 0; i < divisor.mWordCount; i++)
         divisorShift(i) = divisor(i);
 
-    addShift(0) = 1;
-    int shifts = 0;
+	////////////////////////////////////////////////////////
+    printf("division\n  ");
+    dividend.bitPrint();
+    printf("\n/ "); divisorShift.bitPrint(); printf("\n  ");
+	////////////////////////////////////////////////////////
 
-    printf("\n  ");
-    divisorShift.bitPrint();
-    printf("\n  ");
+	accumulatorBI.goToTop();
+	while (accumulatorBI() == 0){
+		dividendLeadingZeros++;
+		accumulatorBI--;
+	}
 
-    // shift the modulus to have it's most significant 1  in the MSB position.
-    while((divisorShift(divisorShift.mWordCount - 1) & mask) == 0){
-        divisorShift <<= 1;
+	divisorBI.goToTop();
+	while (divisorBI() == 0){
+		divisorLeadingZeros++;
+		divisorBI--;
+	}
 
-        divisorShift.bitPrint();
-        printf("\n  ");
-        shifts++;
-    }
-    if (shifts > 0){
-        addShift <<= (shifts );
-    }
+	shifts = dividend.mBitCount - dividendLeadingZeros - divisor.mBitCount + divisorLeadingZeros;
 
-    quotient.clear();
-    assert( !addShift.isZero());
+	quotientBI.goToBit(shifts);
+	divisorShift <<= shifts;
 
-    for (int wordIdx = accumulator.mWordCount - 1; wordIdx >= 0 && shifts >=0; wordIdx--){
+	while (shifts){
+		if (accumulatorBI() != 0)
+        {
+            /*printf("\nq ");
+            quotient.bitPrint();*/
+            printf("\na ");
+            accumulator.bitPrint();
 
-        mask = ((T)1) << (sizeof(T)* 8 - 1);
+            printf(" , ");
+            quotient.bitPrint(shifts);
 
-        for (int bitIdx = sizeof(T)* 8 - 1; bitIdx >= 0 && shifts >= 0; bitIdx--, shifts--){
-            if (accumulator(wordIdx ) & mask)
-            {
-                /*printf("\nq ");
-                quotient.bitPrint();*/
-                printf("\na ");
-                accumulator.bitPrint();
+            printf("\n^ ");
+            divisorShift.bitPrint();
 
-                printf(" , ");
-                quotient.bitPrint(shifts);
-
-                printf("\n^ ");
-                divisorShift.bitPrint();
-
-                printf(" , ");
-                addShift.bitPrint();
-
-                add(quotient, addShift, quotient);
-                add(accumulator, divisorShift, accumulator);
-            }
-            else{
-                printf("\n-\t\t\t\t\t");
-                printf(", ");
-                quotient.bitPrint(shifts );
-            }
-
-            mask >>= 1;
-            addShift >>= 1;
-            divisorShift >>= 1;
+            //add(quotient, addShift, quotient);
+			quotientBI.flipBit();
+			add(accumulator, divisorShift, accumulator);
         }
-    }
+        else{
+            printf("\n- ");
+			accumulator.bitPrint();
 
-    for (int i = 0; i < divisor.mWordCount; i++)
+            printf(" , ");
+            quotient.bitPrint(shifts );
+        }
+		accumulatorBI--;
+		quotientBI--;
+        divisorShift >>= 1;
+		shifts--;
+	}
+    
+	printf("\n  ");
+	accumulator.bitPrint();
+	printf(" , ");
+	quotient.bitPrint();
+
+	for (int i = 0; i < divisor.mWordCount; i++)
         remainder(i) = accumulator(i);
 
 }
@@ -430,7 +412,7 @@ void FiniteField<T>::bitPrint(int idx)const
                 printf((((bt & z) == z) ? "1" : "0"));
 
                 if (curIdx == idx){
-                    SetConsoleTextAttribute(hConsole, 15);
+                    SetConsoleTextAttribute(hConsole, 7);
                 }
                 curIdx--;
             }

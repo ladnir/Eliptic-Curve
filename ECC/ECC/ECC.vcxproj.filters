@@ -18,12 +18,18 @@
     <ClInclude Include="FiniteFields.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BitIterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="FiniteFields.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="BitIterator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

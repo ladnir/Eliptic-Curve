@@ -116,9 +116,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BitIterator.h" />
     <ClInclude Include="FiniteFields.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BitIterator.cpp" />
     <ClCompile Include="FiniteFields.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>

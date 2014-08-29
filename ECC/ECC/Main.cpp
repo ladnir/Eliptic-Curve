@@ -20,13 +20,14 @@ int main(int argc, char* argv){
 
     num(0) = 2;
     //FiniteField<uint8_t>::multiply(ffp1,num,prod);
-    FiniteField<uint8_t> prod(ffp1);
-    prod <<= 2;
-    prod(0) += 1;
-    //ffp2.bitPrint();
-    //printf(" \n/ ");
-    //ffp1.bitPrint();
-    //FiniteField<uint8_t>::division(prod, ffp1, quo, rem);
+    FiniteField<uint8_t> prod(ffp1.mBitCount);
+    //prod <<= 2
+
+	//ffp1(0) = (uint8_t)-1;
+	//ffp1(1) = (uint8_t)-1;
+	//ffp2(0) = (uint8_t)-1;
+	//ffp2(1) = (uint8_t)-1;
+
     FiniteField<uint8_t>::multiply(ffp1, ffp2, prod);
 
     printf("\n = \n q ");
