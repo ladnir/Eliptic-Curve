@@ -71,6 +71,7 @@ public:
 	int mWordCount;
 	int mBitCount;
 	T* num;
+	static bool show;
 
 	typedef BitIterator<T> bitIterator;
 
@@ -79,3 +80,5 @@ public:
 	bitIterator getBit(int) const;
 };
 
+template<class T> 
+bool FiniteField<T>::show = false;
