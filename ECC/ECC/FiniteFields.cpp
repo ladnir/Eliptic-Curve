@@ -3,12 +3,10 @@
 #include <string.h>     /* strcat */
 
 #include <iostream>
-
-//template<class T>
-//FiniteField<T>* FiniteField<T>::irrPoly = nullptr;
+#include <map>
 
 template<class T>
-FiniteField<T>::FiniteField(int bitCount){
+ FiniteField<T>::FiniteField(int bitCount){
 
     mWordSize = (sizeof(T)* 8);
     mWordCount = bitCount / mWordSize;
@@ -20,7 +18,7 @@ FiniteField<T>::FiniteField(int bitCount){
 
 }
 template<class T>
-FiniteField<T>::FiniteField(const FiniteField<T>& copy){
+ FiniteField<T>::FiniteField(const  FiniteField<T>& copy){
 
     mWordSize = copy.mWordSize;
     mBitCount = copy.mBitCount;
@@ -35,15 +33,15 @@ FiniteField<T>::FiniteField(const FiniteField<T>& copy){
 }
 
 template<class T>
-FiniteField<T>::~FiniteField(){
+ FiniteField<T>::~FiniteField(){
     if (num != nullptr)
         free(num);
 }
 
 template<class T>
-void FiniteField<T>::add(const FiniteField<T>& augend, 
-                         const FiniteField<T>& addend, 
-                               FiniteField<T>& sum){
+void  FiniteField<T>::add(const  FiniteField<T>& augend, 
+                         const  FiniteField<T>& addend, 
+                                FiniteField<T>& sum){
 
     assert(augend.mWordCount == addend.mWordCount);
 
@@ -53,13 +51,13 @@ void FiniteField<T>::add(const FiniteField<T>& augend,
 }
 
 template<class T>
-void FiniteField<T>::multiply(const FiniteField<T>& multiplicand, 
-                              const FiniteField<T>& multiplier, 
-                                    FiniteField<T>& product){
+void  FiniteField<T>::multiply(const  FiniteField<T>& multiplicand, 
+                              const  FiniteField<T>& multiplier, 
+                                     FiniteField<T>& product){
 
-    FiniteField<T> tempProd(multiplicand.mBitCount * 2);
-    FiniteField<T> doubleP1(multiplicand.mBitCount * 2);
-    FiniteField<T> multiplierCopy(multiplier.mBitCount);
+     FiniteField<T> tempProd(multiplicand.mBitCount * 2);
+     FiniteField<T> doubleP1(multiplicand.mBitCount * 2);
+     FiniteField<T> multiplierCopy(multiplier.mBitCount);
 
     for (int i = 0; i < multiplicand.mWordCount; i++){
         doubleP1(i) = multiplicand(i);
@@ -72,13 +70,13 @@ void FiniteField<T>::multiply(const FiniteField<T>& multiplicand,
 
         if (multiplierCopy(0) & 1){
             add(tempProd, doubleP1, tempProd);
-			if (FiniteField<T>::show)
+			if ( FiniteField<T>::show)
 			{
 				cout << " " << doubleP1 << "\t" << multiplierCopy << endl;
 			}
         }
         else{
-			if (FiniteField<T>::show)
+			if ( FiniteField<T>::show)
 			{
 				cout << "\t\t\t\t\t" << multiplierCopy << endl;
 			}
@@ -87,26 +85,26 @@ void FiniteField<T>::multiply(const FiniteField<T>& multiplicand,
         doubleP1 <<= 1;
         multiplierCopy >>= 1;
     }
-	if (FiniteField<T>::show)
+	if ( FiniteField<T>::show)
 	{
 		  cout << "^___________________________________________________" << endl;
 		  cout << " " << tempProd << endl << endl;
 	}
     FiniteField<T>&  tempMod = getIrrPoly(multiplicand.mBitCount);
-    FiniteField<T> quotient(product.mBitCount);
+	FiniteField<T> quotient(product.mBitCount);
     division(tempProd, tempMod, quotient, product);
 
-	if (FiniteField<T>::show)
+	if ( FiniteField<T>::show)
 	{
 		std::cout << endl << product << endl;
 	}
 }
 
 template<class T>
-void FiniteField<T>::modulus(FiniteField<T>& m, const FiniteField<T>& divisor){
+void  FiniteField<T>::modulus( FiniteField<T>& m, const  FiniteField<T>& divisor){
     
-    FiniteField<T> quotient(divisor.mBitCount);
-    FiniteField<T> remainder(divisor.mBitCount);
+     FiniteField<T> quotient(divisor.mBitCount);
+     FiniteField<T> remainder(divisor.mBitCount);
 
     division(m, divisor, quotient, remainder);
 
@@ -215,7 +213,25 @@ void FiniteField<T>::invert(const FiniteField<T>& base, FiniteField<T>& inverse)
     FiniteField<T> gcd(base.mBitCount);
     FiniteField<T> aCo(base.mBitCount);
 
-    extGCD(getIrrPoly(), base, gcd, aCo, inverse);
+    extGCD(getIrrPoly(base.mBitCount), base, gcd, aCo, inverse);
+}
+
+template<class T>
+void FiniteField<T>::bruteForceInvert(const FiniteField<T>& base, FiniteField<T>& inverse)
+{
+	inverse.clear();
+
+	FiniteField<T> prod(base.mBitCount);
+	FiniteField<T> knownProd(base.mBitCount);
+	knownProd(0) = 1;
+
+	while (!( prod == knownProd))
+	{
+		inverse++;
+		assert(!inverse.isZero());
+
+		FiniteField<T>::multiply(base, inverse, prod);
+	}
 }
 
 template<class T>
@@ -310,6 +326,34 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
 }
 
 template<class T>
+void FiniteField<T>::bruteForceGCD(const FiniteField<T>& a, 
+								   const FiniteField<T>& b, 
+								         FiniteField<T>& gcd)
+{
+	FiniteField<T> scanner(a.mBitCount);
+	scanner(0) = 1;
+
+	FiniteField<T> aRem(a.mBitCount);
+	FiniteField<T> bRem(a.mBitCount);
+
+	FiniteField<T> quo(a.mBitCount);
+
+
+	while (!scanner.isZero()){
+		
+		FiniteField<T>::division(a, scanner, quo, aRem);
+		FiniteField<T>::division(b, scanner, quo, bRem);
+
+		if (aRem.isZero() && bRem.isZero()){
+			cout << "g " << scanner << endl;
+			gcd.copy(scanner);
+		}
+		cout << "  " << scanner << endl;
+		scanner++;
+
+	}
+}
+template<class T>
 void testEq(FiniteField<T>& lhs, FiniteField<T>& mul, FiniteField<T>& scl, FiniteField<T>& rem)
 {
 #ifdef _DEBUG 
@@ -377,6 +421,16 @@ T& FiniteField<T>::operator()(const int & i) const
 }
 
 template<class T>
+void FiniteField<T>::operator++(int)
+{
+	for (int i = 0; i < mWordCount; i++)
+	{
+		num[i]++;
+		if (num[i] != 0) return;
+	}
+}
+
+template<class T>
 bool FiniteField<T>::operator==(const FiniteField<T>& cmp) const
 {
     assert(mBitCount == cmp.mBitCount);
@@ -389,22 +443,36 @@ bool FiniteField<T>::operator==(const FiniteField<T>& cmp) const
 }
 
 template<class T>
-FiniteField<T>& FiniteField<T>::getIrrPoly(int bitCount){
+ FiniteField<T>&  FiniteField<T>::getIrrPoly(int bitCount)
+ {
+	/*map<int, FiniteField<T>>::iterator irrPoly = irrPolies.find(bitCount);
 
-    FiniteField<T>* irrPoly = new FiniteField<T>(bitCount);
-    for (int i = 0; i < bitCount; i++){
-        irrPoly->num[i] = (T)i * 3 + 4;
-    }
+	if (irrPoly != irrPolies.end())
+	{
+		return *(irrPoly->second);
+	}
+	else{*/
 
-    // set top bit.
-    irrPoly->num[irrPoly->mWordCount - 1] = (T)-1;
-    irrPoly->num[irrPoly->mWordCount - 2] = (T)-1;
+		FiniteField<T>* ip = new FiniteField<T>(bitCount);
+		//irrPolies.emplace(bitCount, ip);
 
-    return *irrPoly;
+		// 100011011
+		if (bitCount == 9)
+		{
+			ip->operator()(0) = 27;
+			ip->operator()(1) = 1;
+
+		}
+		else{
+			assert(0 && "undefined irrPoly");
+		}
+
+		return *ip;
+	//}
 }
 
 template<class T>
-void FiniteField<T>::clear()
+void  FiniteField<T>::clear()
 {
     for (int i = 0; i < mWordCount; i++){
         num[i] = 0;
@@ -413,7 +481,7 @@ void FiniteField<T>::clear()
 }
 
 template<class T>
-void FiniteField<T>::copy(const FiniteField<T>& source)
+void  FiniteField<T>::copy(const  FiniteField<T>& source)
 {
     assert(mBitCount == source.mBitCount);
 
@@ -424,20 +492,20 @@ void FiniteField<T>::copy(const FiniteField<T>& source)
 }
 
 //template<class T>
-//void FiniteField<T>::bitPrint()const
+//void  FiniteField<T>::bitPrint()const
 //{
 //    bitPrint(-1);
 //}
 //
 //template<class T>
-//void FiniteField<T>::bitPrint(int idx)const
+//void  FiniteField<T>::bitPrint(int idx)const
 //{
 //
-//    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+//    HAPDLE hConsole = GetStdHandle(STD_OUTPUT_HAPDLE);
 //
 //    int curIdx = mWordCount * sizeof(T) * 8 - 1;
 //
-//	FiniteField<T>::bitIterator bits = this->getMSB();
+//	 FiniteField<T>::bitIterator bits = this->getMSB();
 //
 //	while (bits >= this->getLSB())
 //	{
@@ -454,7 +522,7 @@ void FiniteField<T>::copy(const FiniteField<T>& source)
 //}
 
 template<class T>
-void FiniteField<T>::print() const
+void  FiniteField<T>::print() const
 {
 
     for (int i = mWordCount - 1; i >= 0 ; i--){
@@ -464,17 +532,19 @@ void FiniteField<T>::print() const
 }
 
 template<class T>
-bool FiniteField<T>::isZero()const
+bool  FiniteField<T>::isZero()const
 {
-    for (int i = 0; i < mWordCount; i++)
+    for (int i = 0; i < mWordCount - 1; i++)
     {
         if (num[i] != 0) return false;
     }
+
+	if ()
     return true;
 }
 
 template<class T>
-void FiniteField<T>::randomize(){
+void  FiniteField<T>::randomize(){
 
     //static std::default_random_engine generator;
     //static std::uniform_int_distribution<T> distribution(0, (T)-1);
@@ -489,31 +559,31 @@ void FiniteField<T>::randomize(){
 }
 
 template<class T>
-typename FiniteField<T>::bitIterator FiniteField<T>::getLSB() const
+typename  FiniteField<T>::bitIterator  FiniteField<T>::getLSB() const
 {
-    return FiniteField<T>::bitIterator(*this);
+    return  FiniteField<T>::bitIterator(*this);
 }
 
 template<class T>
-typename FiniteField<T>::bitIterator FiniteField<T>::getMSB() const
+typename  FiniteField<T>::bitIterator  FiniteField<T>::getMSB() const
 {
-    FiniteField<T>::bitIterator MSB(*this);
+     FiniteField<T>::bitIterator MSB(*this);
     MSB.goToMSB();
     return MSB;
 }
 
 template<class T>
-typename FiniteField<T>::bitIterator FiniteField<T>::getBit(int bit) const
+typename  FiniteField<T>::bitIterator  FiniteField<T>::getBit(int bit) const
 {
-    FiniteField<T>::bitIterator bitIter(*this);
+     FiniteField<T>::bitIterator bitIter(*this);
     bitIter.goToBit(bit);
     return bitIter;
 }
 
 template<class T>
-ostream& operator << (ostream& stream,const FiniteField<T>& field)
+ostream& operator << (ostream& stream,const  FiniteField<T>& field)
 {
-    FiniteField<T>::bitIterator bits = field.getMSB();
+     FiniteField<T>::bitIterator bits = field.getMSB();
 
     while (bits >= field.getLSB())
     {

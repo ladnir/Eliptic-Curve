@@ -17,15 +17,13 @@ bool Tests<T>::runAll()
 template<class T>
 bool Tests<T>::testMultDivide()
 {
-	for (int i = 0; i < 100; i++)
-	{
 
 		FiniteField<T> num1(16);
 		FiniteField<T> num2(16);
 		FiniteField<T> prod(16);
 
-		num1.randomize();
-		num2.randomize();
+		num1(0) = 14;
+		num2(0) = 9;
 
 		FiniteField<T>::multiply(num1, num2, prod);
 
@@ -54,7 +52,7 @@ bool Tests<T>::testMultDivide()
 			cout << "r " << rem << endl;
 
 		}
-	}
+	
 
 	return true;
 }
@@ -104,6 +102,106 @@ bool Tests<T>::testMultiply()
 	return result;
 }
 
+
+template<class T>
+bool Tests<T>::testMultiply1()
+{
+	FiniteField<T> num1(16);
+	FiniteField<T> num2(16);
+	FiniteField<T> prod(16);
+
+	num1(0) = 41;
+	num1(1) = 35;
+
+	num2(0) = 4;
+	FiniteField<T>::multiply(num1, num2, prod);
+	cout << prod << " = " << num1 << " * " << num2 << endl;
+
+	return true;
+}
+
+template<class T>
+bool Tests<T>::testWikiDivision()
+{
+
+
+	FiniteField<T> num1(9);
+	FiniteField<T> num2(9);
+
+	num1(0) = 83; // 01010011
+	num2(0) = 202; // 11001010
+
+	//FiniteField<T> quo(9);
+	//FiniteField<T> rem(9);
+	FiniteField<T> prod(9);
+	FiniteField<T>::show = true;
+	FiniteField<T>::multiply(num1, num2, prod);
+
+	cout << prod << endl;
+
+	return true;
+}
+
+template<class T>
+bool Tests<T>::testWikiInverse()
+{
+	FiniteField<T> base(9);
+	FiniteField<T> inv(9);
+	FiniteField<T> knownInv(9);
+
+	base(0) = 83;
+	knownInv(0) = 202;
+
+	FiniteField<T>::invert(base, inv);
+
+	assert(inv == knownInv);
+	return inv == knownInv;
+}
+
+template<class T>
+bool Tests<T>::testWikiBruteForceInverse()
+{
+	FiniteField<T> base(9);
+	FiniteField<T> inv(9);
+	FiniteField<T> knownInv(9);
+
+	base(0) = 83;
+	knownInv(0) = 202;
+
+	FiniteField<T>::bruteForceInvert(base, inv);
+
+	assert(inv == knownInv);
+	return inv == knownInv;
+}
+
+template<class T>
+bool Tests<T>::testBruteForceGCD()
+{
+	FiniteField<T> a(9);
+	FiniteField<T> b(9);
+	//FiniteField<T> t1(9);
+	//FiniteField<T> t2(9);
+
+	FiniteField<T> gcd(9);
+
+	a(0) = 82;
+	b(0) = 82;
+
+	FiniteField<T>::bruteForceGCD(a, b, gcd);
+
+	FiniteField<T> aRem(9);
+	FiniteField<T> bRem(9);
+	FiniteField<T> quo(9);
+
+	FiniteField<T>::division(a, gcd, quo, aRem);
+	FiniteField<T>::division(b, gcd, quo, bRem);
+
+	assert(aRem.isZero() && bRem.isZero());
+
+	cout << gcd << endl;
+
+	return true;
+}
 
 template<class T>
 bool Tests<T>::testGCD()

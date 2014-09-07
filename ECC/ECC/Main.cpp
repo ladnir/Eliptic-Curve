@@ -7,7 +7,8 @@
 
 int main(int argc, char* argv){
         
-	Tests<uint8_t>::testMultDivide();
+	Tests<uint8_t>::testBruteForceGCD();
+	//Tests<uint8_t>::testMultiply1();
 
     return 1;
 }

@@ -44,6 +44,9 @@ public:
 	static void invert(const FiniteField<T>& base, 
 							 FiniteField<T>& inverse);
 
+	static void bruteForceInvert(const FiniteField<T>& base,
+									   FiniteField<T>& inverse);
+
 	static void extGCD(const FiniteField<T>& a, 
 					   const FiniteField<T>& b, 
 							 FiniteField<T>& gcd,
@@ -51,11 +54,16 @@ public:
 							 FiniteField<T>& bCoefficient);
 	
 	
+	static void bruteForceGCD(const FiniteField<T>& a, 
+							  const FiniteField<T>& b, 
+									FiniteField<T>& gcd);
+
 	T& operator()(const int&)const;
 	void operator<<=(const int&);
 	void operator>>=(const int&);
-
+	void operator++(int);
 	bool operator==(const FiniteField<T>&)const;
+
 	bool isZero()const;
 
 	void randomize();
@@ -65,8 +73,11 @@ public:
 	void print() const;
 
 	static FiniteField<T>& getIrrPoly(int bitCount);
-	
-	//static FiniteField<T>* irrPoly;
+
+	//static std::map<std::string, void*> m_registry;
+	//static std::map<int, FiniteField<T>*> createIrrPolies();
+	//static std::map<int, FiniteField<T>*> irrPolies;
+
 	int mWordSize;
 	int mWordCount;
 	int mBitCount;
@@ -82,3 +93,6 @@ public:
 
 template<class T> 
 bool FiniteField<T>::show = false;
+
+//template<class T>
+//map<int, FiniteField<T>*> FiniteField<T>::irrPolies = createIrrPolies();
