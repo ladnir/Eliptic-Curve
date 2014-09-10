@@ -53,7 +53,12 @@ public:
 							 FiniteField<T>& aCoefficient,
 							 FiniteField<T>& bCoefficient);
 	
-	
+    static void bruteForceExtGCD(const FiniteField<T>& a, 
+                                 const FiniteField<T>& b, 
+                                 	   FiniteField<T>& gcd,
+                                 	   FiniteField<T>& aCoefficient,
+                                       FiniteField<T>& bCoefficient);
+
 	static void bruteForceGCD(const FiniteField<T>& a, 
 							  const FiniteField<T>& b, 
 									FiniteField<T>& gcd);
@@ -69,6 +74,8 @@ public:
 	void randomize();
 	void clear();
 	void copy(const FiniteField<T>&);
+    void steal(FiniteField<T>&);
+    bool checkHighBits();
 
 	void print() const;
 

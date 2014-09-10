@@ -5,10 +5,14 @@
 
 #include "Tests.cpp"
 
+
 int main(int argc, char* argv){
-        
-	Tests<uint8_t>::testBruteForceGCD();
-	//Tests<uint8_t>::testMultiply1();
+    typedef uint8_t T;
+
+	//Tests<T>::testBruteForceGCD();
+    //Tests<T>::testGCD();
+	//Tests<T>::testMultiply1();
+    Tests<T>::testGCDvsBFInverse();
 
     return 1;
 }

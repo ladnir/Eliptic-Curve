@@ -204,9 +204,23 @@ void FiniteField<T>::division(const FiniteField<T>& dividend,
     for (int i = 0; i < divisor.mWordCount; i++)
         remainder(i) = accumulator(i);
 
+    assert(remainder.checkHighBits());
 }
 
+template <class T> 
+bool FiniteField<T>::checkHighBits()
+{
+#ifdef _DEBUG
+    T mask = -1;
+    int zeros = mBitCount - mWordCount * mWordSize;
 
+    mask <<= zeros;
+
+    return(!(mask & num[mWordCount - 1]));
+#else 
+    return true;
+#endif
+}
 template<class T>
 void FiniteField<T>::invert(const FiniteField<T>& base, FiniteField<T>& inverse)
 {
@@ -258,8 +272,8 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
     scalers.push_back(&z);
 
     // Compute the Gcd
-    int step;
-    for (step = 1; ! remainders[step]->isZero(); step++)
+    int step = 1;
+    while( ! remainders.back()->isZero())
     {   
         // leftHandSide = multiple * scaler + remainder
 
@@ -272,57 +286,167 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
 
         division(*leftHandSide, *multiple, *scaler, *remainder);
 
-		cout << *leftHandSide << " = " << *multiple << " * " << *scaler << " + " << *remainder << endl;
-		testEq(*leftHandSide, *multiple, *scaler, *remainder);
+		//cout << *leftHandSide << " = " << *multiple << " * " << *scaler << " + " << *remainder << endl;
+        cout << (unsigned int)leftHandSide->num[0] << " = " << (unsigned int)multiple->num[0] << " * " << (unsigned int)scaler->num[0] << " + " << (unsigned int)remainder->num[0] << endl;
+        //testEq(*leftHandSide, *multiple, *scaler, *remainder);
 
+        cout << "rem " << *remainder << endl;
         scalers.push_back(scaler);
         remainders.push_back(remainder);
+        step++;
     }
 
     // get rid of the remainder == 0 step.
     step--;
-    remainders.pop_back();
-    scalers.pop_back();
-
+    delete remainders.back(); remainders.pop_back();
+    delete scalers.back(); scalers.pop_back();
+    
+    
     // Copy the Gcd out.
     for (int i = 0; i < remainders.back()->mWordCount; i++)
     {
         gcd(i) = remainders.back()->num[i];
     }
 
+    delete remainders.back(); remainders.pop_back();
+
     // Compute the linear combination. (extended part)
     // i.e.   h,k  s.t.  h*a + k*b = gcd  
-   /* int aIdx = step -2;
-    int bIdx = step -1;
-
-    aCoefficient.clear();
-    aCoefficient(0) = 1;
-    bCoefficient.copy(*scalers[step]);
-
+#pragma region Extended
+#ifdef _DEBUG
+    FiniteField<T> leftProd(a.mBitCount);
+    FiniteField<T> rightProd(a.mBitCount);
     FiniteField<T> temp(a.mBitCount);
+#endif
+    FiniteField<T> rightScale(a.mBitCount);
+    FiniteField<T> leftScale(a.mBitCount);
 
-    while (aIdx)
+    rightScale.copy(*scalers.back());
+    leftScale(0) = 1;
+
+    delete scalers.back(); scalers.pop_back();
+
+    FiniteField<T>* rightSub = remainders.back(); remainders.pop_back();
+    FiniteField<T>* leftSub = remainders.back(); remainders.pop_back();
+
+#ifdef _DEBUG
+    // test the eq.  h*a + k*b = gcd  
+    FiniteField<T>::multiply(*leftSub, leftScale, leftProd);
+    FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
+    FiniteField<T>::add(leftProd, rightProd, temp);
+    if (FiniteField<T>::show){
+        cout << endl;
+        cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+    }
+    assert(gcd == temp);
+#endif
+
+    while (remainders.size())
     {
-        multiply(*scalers[bIdx], bCoefficient, temp );
-        add(aCoefficient, temp, aCoefficient);
 
-        bIdx -= 2;
+        // substite right.
+        delete rightSub; // free the current one
+        rightSub = remainders.back(); remainders.pop_back(); // get the next one
 
-        if (bIdx == 0)
-            break;
+        // group the terms with the left side.
+        // leftScale = leftScale + nextScale * rightScale
+        FiniteField<T>::multiply(*scalers.back(), rightScale, temp);
+        FiniteField<T>::add(leftScale, temp, leftScale);
 
-        multiply(*scalers[aIdx], aCoefficient, temp);
-        add(bCoefficient, temp, bCoefficient);
-        aIdx -=2;
+        delete scalers.back(); scalers.pop_back(); // free the scaler
+
+#ifdef _DEBUG
+        // test the eq.  h*a + k*b = gcd  
+        FiniteField<T>::multiply(*leftSub, leftScale, leftProd);
+        FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
+        FiniteField<T>::add(leftProd, rightProd, temp);
+
+        if (FiniteField<T>::show){
+            cout << endl;
+            cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+        }
+        assert(gcd == temp);
+#endif
+
+        if (remainders.size() == 0) break; // break if we are done.
+
+        // substite left.
+        delete leftSub; // free the current one
+        leftSub = remainders.back(); remainders.pop_back(); // get the next one
+
+        // group the terms with the right side.
+        // rightScale = rightScale + nextScale *leftScale
+        FiniteField<T>::multiply(*scalers.back(), leftScale, temp);
+        FiniteField<T>::add(rightScale, temp, rightScale);
+
+        delete scalers.back(); scalers.pop_back(); // free the scaler
+
+#ifdef _DEBUG
+        // test the eq.  h*a + k*b = gcd  
+        FiniteField<T>::multiply(*leftSub, leftScale, leftProd);
+        FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
+        FiniteField<T>::add(leftProd, rightProd, temp);
+
+        cout << endl;
+        cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+
+        assert(gcd == temp);
+#endif
     }
 
-    FiniteField<T> at(a.mBitCount);
-    FiniteField<T> bt(a.mBitCount);
-*/
-  /*  multiply(a, aCoefficient, at);
-    multiply(b, bCoefficient, bt);
-    assert( at == bt);*/
+    if (a == *leftSub){
+        cout << leftScale << " " << rightScale << endl;
+        aCoefficient.steal(leftScale);
+        bCoefficient.steal(rightScale);
+        cout << aCoefficient << " " << bCoefficient << endl;
+    }
+    else{
+        cout << leftScale << " " << rightScale << endl;
+        aCoefficient.steal(rightScale);
+        bCoefficient.steal(leftScale);
+        cout << bCoefficient << " " << aCoefficient << endl;
+    }
+#pragma endregion
+}
 
+template<class T>
+void FiniteField<T>::bruteForceExtGCD(const FiniteField<T>& a, 
+								      const FiniteField<T>& b, 
+								            FiniteField<T>& gcd,
+                                            FiniteField<T>& aCoefficient,
+                                            FiniteField<T>& bCoefficient)
+{
+    assert(0);
+    bruteForceGCD(a,b,gcd);
+
+    aCoefficient.clear();
+    bCoefficient.clear();
+
+    aCoefficient(0) = 1;
+    bCoefficient(0) = 1;
+
+    FiniteField<T> aProd(a.mBitCount);
+    FiniteField<T> bProd(b.mBitCount);
+    FiniteField<T> sum(a.mBitCount);
+
+    while (true)
+    {
+
+        FiniteField<T>::multiply(a,aCoefficient, aProd);
+
+        while (true)
+        {
+            FiniteField<T>::multiply(b, bCoefficient, bProd);
+            
+            FiniteField<T>::add(aProd, bProd, sum);
+
+            if (sum == gcd) return;
+
+            bCoefficient++;
+        }
+
+        aCoefficient++;
+    }
 }
 
 template<class T>
@@ -345,10 +469,10 @@ void FiniteField<T>::bruteForceGCD(const FiniteField<T>& a,
 		FiniteField<T>::division(b, scanner, quo, bRem);
 
 		if (aRem.isZero() && bRem.isZero()){
-			cout << "g " << scanner << endl;
+			//cout << "g " << scanner << endl;
 			gcd.copy(scanner);
 		}
-		cout << "  " << scanner << endl;
+		//cout << "  " << scanner << endl;
 		scanner++;
 
 	}
@@ -365,7 +489,8 @@ void testEq(FiniteField<T>& lhs, FiniteField<T>& mul, FiniteField<T>& scl, Finit
 
 	if (! (sum == lhs))
 	{
-		cout << "n eq " << endl;
+       
+		cout << "n eq " << lhs << endl;
 		cout << sum << " = " << mul << " * " << scl << " + " << rem << endl;
 		cout << prod << " = " << mul << " * " << scl << endl;
 	}
@@ -423,11 +548,14 @@ T& FiniteField<T>::operator()(const int & i) const
 template<class T>
 void FiniteField<T>::operator++(int)
 {
-	for (int i = 0; i < mWordCount; i++)
+	for (int i = 0; i < mWordCount - 1; i++)
 	{
 		num[i]++;
 		if (num[i] != 0) return;
 	}
+
+    T mask = 2 * (mBitCount - mWordCount * mWordSize ) - 1;
+    num[mWordCount - 1] = num[mWordCount - 1] & mask;
 }
 
 template<class T>
@@ -491,6 +619,16 @@ void  FiniteField<T>::copy(const  FiniteField<T>& source)
     }
 }
 
+template<class T>
+void FiniteField<T>::steal(FiniteField<T>& source)
+{
+    assert(mBitCount == source.mBitCount);
+
+    if (num != nullptr) delete num;
+    num =  source.num;
+    source.num = nullptr;
+}
+
 //template<class T>
 //void  FiniteField<T>::bitPrint()const
 //{
@@ -534,13 +672,32 @@ void  FiniteField<T>::print() const
 template<class T>
 bool  FiniteField<T>::isZero()const
 {
-    for (int i = 0; i < mWordCount - 1; i++)
+    bool result =  true;
+    int i = 0;
+    for (; i < mWordCount; i++)
     {
-        if (num[i] != 0) return false;
+        if (num[i] != 0){
+            result =  false;
+            cout << (unsigned int) num[i] << endl;
+            break;
+        }
     }
 
-	if ()
-    return true;
+#ifdef _DEBUG
+    
+    T mask = -1; // 11111111
+
+    // 11100000
+    int ones = (mWordCount)* mWordSize - mBitCount;
+    int zeros = sizeof(T) * 8 - ones;
+
+    mask <<= zeros;
+
+    assert(! (mask & num[mWordCount -1]) );
+
+#endif
+
+    return result;
 }
 
 template<class T>
@@ -548,14 +705,19 @@ void  FiniteField<T>::randomize(){
 
     //static std::default_random_engine generator;
     //static std::uniform_int_distribution<T> distribution(0, (T)-1);
-
-    for (int i = 0; i < mWordCount; i++){
-
-        //T n = distribution(generator);
-        T n = (T)rand();
-        num[i] = n;
-
+ #if 1
+    
+    for (int i = 0; i < mWordCount; i++){         
+        num[i] = (T)rand();
     }
+    
+#else
+    static std::default_random_engine generator;
+    static std::uniform_int_distribution<T> distribution(0, (T)-1);
+    for (int i = 0; i < mWordCount; i++){
+        num[i] = distribution(generator);
+    }
+#endif
 }
 
 template<class T>

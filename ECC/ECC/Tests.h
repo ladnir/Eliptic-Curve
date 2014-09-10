@@ -17,5 +17,8 @@ public:
 
 	static bool testGCD();
 	static bool testMultDivide();
+
+    static bool testGCDvsInverse();
+    static bool testGCDvsBFInverse();
 };
 

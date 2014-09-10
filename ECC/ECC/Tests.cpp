@@ -184,8 +184,8 @@ bool Tests<T>::testBruteForceGCD()
 
 	FiniteField<T> gcd(9);
 
-	a(0) = 82;
-	b(0) = 82;
+	a(0) = 83;
+	b(0) = 202;
 
 	FiniteField<T>::bruteForceGCD(a, b, gcd);
 
@@ -206,21 +206,21 @@ bool Tests<T>::testBruteForceGCD()
 template<class T>
 bool Tests<T>::testGCD()
 {
-	FiniteField<T> a(16);
-	FiniteField<T> b(16);
-	FiniteField<T> gcd(16);
-	FiniteField<T> aCo(16);
-	FiniteField<T> bCo(16);
+	FiniteField<T> a(9);
+	FiniteField<T> b(9);
+	FiniteField<T> gcd(9);
+	FiniteField<T> aCo(9);
+	FiniteField<T> bCo(9);
 
-	FiniteField<T> aQu(16);
-	FiniteField<T> bQu(16);
-	FiniteField<T> aR(16);
-	FiniteField<T> bR(16);
+	FiniteField<T> aProd(9);
+	FiniteField<T> bProd(9);
+	FiniteField<T> sum(9);
 
-	a.randomize();
-	b.randomize();
+    a(0) = 83;
+    b(0) = 202;
 
-	FiniteField<T>::extGCD(a, b, gcd, aCo, bCo);
+    FiniteField<T>::extGCD(a, b, gcd, aCo, bCo);
+    //FiniteField<T>::bruteForceExtGCD(a, b, gcd, aCo, bCo);
 
 	cout << "a " << a << endl;
 	cout << "b " << b << endl;
@@ -228,10 +228,45 @@ bool Tests<T>::testGCD()
 	cout << "aCo " << aCo << endl;
 	cout << "bCo " << bCo << endl;
 
-	FiniteField<T>::division(a, aCo, aQu, aR);
+    FiniteField<T>::multiply(a, aCo, aProd);
+    FiniteField<T>::multiply(b, bCo, bProd);
 
+    FiniteField<T>::add(aProd, bProd, sum);
 
-	cout << "aQu " << aQu << endl;
-	cout << "aR " << aR << endl;
-	return false;
+    cout << endl;
+    cout << "aPo " << aProd << endl;
+    cout << "bPo " << bProd << endl;
+
+    cout << endl;
+    cout << "sum " << sum << endl;
+    cout << "gcd " << gcd << endl;
+
+    assert(sum == gcd);
+
+    return sum == gcd;
+}
+
+template<class T>
+bool Tests<T>::testGCDvsBFInverse()
+{
+    FiniteField<T> a(9);
+    FiniteField<T> aInverse(9);
+    FiniteField<T> aBFInverse(9);
+    FiniteField<T> gcd(9);
+
+    FiniteField<T>& irrPoly = FiniteField<T>::getIrrPoly(9);
+    FiniteField<T> irrPolyCo(9);
+
+    for (int i = 0; i < 100; i++)
+    {
+        a.randomize();
+
+        FiniteField<T>::bruteForceInvert(a,aBFInverse);
+
+        FiniteField<T>::extGCD(irrPoly, a, gcd, irrPolyCo, aInverse);
+
+        assert(aBFInverse == aInverse);
+
+    }
+    return true;
 }
