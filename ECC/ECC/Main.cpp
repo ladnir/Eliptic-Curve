@@ -10,9 +10,9 @@ int main(int argc, char* argv){
     typedef uint8_t T;
 
 	//Tests<T>::testBruteForceGCD();
-    //Tests<T>::testGCD();
+    Tests<T>::testGCD();
 	//Tests<T>::testMultiply1();
-    Tests<T>::testGCDvsBFInverse();
+    //Tests<T>::testGCDvsBFInverse();
 
     return 1;
 }

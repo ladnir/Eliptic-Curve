@@ -230,6 +230,7 @@ bool Tests<T>::testGCDvsBFInverse()
     for (int i = 0; i < 100; i++)
     {
         a.randomize();
+        if (a.isZero()) continue;
 
         FiniteField<T>::bruteForceInvert(a,aBFInverse);
 

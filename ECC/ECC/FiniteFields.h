@@ -75,9 +75,7 @@ public:
 
 	static FiniteField<T>& getIrrPoly(int bitCount);
 
-	//static std::map<std::string, void*> m_registry;
-	//static std::map<int, FiniteField<T>*> createIrrPolies();
-	//static std::map<int, FiniteField<T>*> irrPolies;
+  
 
 	int mWordSize;
 	int mWordCount;
@@ -90,10 +88,15 @@ public:
 	bitIterator getLSB() const;
 	bitIterator getMSB() const;
 	bitIterator getBit(int) const;
+
+
+    static void* irrPolys;
 };
 
 template<class T> 
 bool FiniteField<T>::show = false;
 
-//template<class T>
-//map<int, FiniteField<T>*> FiniteField<T>::irrPolies = createIrrPolies();
+template<class T>
+void* FiniteField<T>::irrPolys(nullptr);
+
+
