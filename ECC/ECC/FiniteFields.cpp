@@ -44,10 +44,13 @@ void  FiniteField<T>::add(const  FiniteField<T>& augend,
                                 FiniteField<T>& sum){
 
     assert(augend.mWordCount == addend.mWordCount);
+    assert(augend.mWordCount == sum.mWordCount);
 
     for (int i = 0; i < augend.mWordCount; i++){
         sum(i) = augend(i) ^ addend(i);
     }
+
+    assert(sum.checkHighBits());
 }
 
 template<class T>
@@ -70,34 +73,34 @@ void  FiniteField<T>::multiply(const  FiniteField<T>& multiplicand,
 
         if (multiplierCopy(0) & 1){
             add(tempProd, doubleP1, tempProd);
-			if ( FiniteField<T>::show)
-			{
-				cout << " " << doubleP1 << "\t" << multiplierCopy << endl;
-			}
+			//if ( FiniteField<T>::show)
+			//{
+			//	cout << " " << doubleP1 << "\t" << multiplierCopy << endl;
+			//}
         }
-        else{
-			if ( FiniteField<T>::show)
-			{
-				cout << "\t\t\t\t\t" << multiplierCopy << endl;
-			}
-        }
+   //     else{
+			//if ( FiniteField<T>::show)
+			//{
+			//	cout << "\t\t\t\t\t" << multiplierCopy << endl;
+			//}
+   //     }
 
         doubleP1 <<= 1;
         multiplierCopy >>= 1;
     }
-	if ( FiniteField<T>::show)
-	{
-		  cout << "^___________________________________________________" << endl;
-		  cout << " " << tempProd << endl << endl;
-	}
+	//if ( FiniteField<T>::show)
+	//{
+	//	  cout << "^___________________________________________________" << endl;
+	//	  cout << " " << tempProd << endl << endl;
+	//}
     FiniteField<T>&  tempMod = getIrrPoly(multiplicand.mBitCount);
 	FiniteField<T> quotient(product.mBitCount);
     division(tempProd, tempMod, quotient, product);
 
-	if ( FiniteField<T>::show)
-	{
-		std::cout << endl << product << endl;
-	}
+	//if ( FiniteField<T>::show)
+	//{
+	//	std::cout << endl << product << endl;
+	//}
 }
 
 template<class T>
@@ -151,12 +154,12 @@ void FiniteField<T>::division(const FiniteField<T>& dividend,
         divisorShift(i) = divisor(i);
 
     ////////////////////////////////////////////////////////
-	if (FiniteField<T>::show)
-	{
-		cout << "division" << endl;
-		cout << "  " << dividend << endl;
-		cout << "/ " << divisorShift << endl;
-	}
+	//if (FiniteField<T>::show)
+	//{
+	//	cout << "division" << endl;
+	//	cout << "  " << dividend << endl;
+	//	cout << "/ " << divisorShift << endl;
+	//}
     ////////////////////////////////////////////////////////
 
     while (*accumulatorBI == 0){
@@ -177,29 +180,29 @@ void FiniteField<T>::division(const FiniteField<T>& dividend,
     while (shifts >= 0){
         if (*accumulatorBI != 0)
         {
-			if (FiniteField<T>::show)
-			{
-				cout << "a " << accumulator << " , " << quotientBI << endl;
-				cout << "^ " << divisorShift << endl;
-			}
+			//if (FiniteField<T>::show)
+			//{
+			//	cout << "a " << accumulator << " , " << quotientBI << endl;
+			//	cout << "^ " << divisorShift << endl;
+			//}
             quotientBI.flipBit();
             add(accumulator, divisorShift, accumulator);
         }
-        else{
-			if (FiniteField<T>::show)
-			{
-				cout << "- " << accumulator << " , " << quotientBI << endl;
-			}
-        }
+   //     else{
+			//if (FiniteField<T>::show)
+			//{
+			//	cout << "- " << accumulator << " , " << quotientBI << endl;
+			//}
+   //     }
         accumulatorBI--;
         quotientBI--;
         divisorShift >>= 1;
         shifts--;
     }
-	if (FiniteField<T>::show)
-	{
-		cout << "r " << accumulator << " ,q" << quotient << endl;
-	}
+	//if (FiniteField<T>::show)
+	//{
+	//	cout << "r " << accumulator << " ,q" << quotient << endl;
+	//}
 
     for (int i = 0; i < divisor.mWordCount; i++)
         remainder(i) = accumulator(i);
@@ -208,11 +211,15 @@ void FiniteField<T>::division(const FiniteField<T>& dividend,
 }
 
 template <class T> 
-bool FiniteField<T>::checkHighBits()
+bool FiniteField<T>::checkHighBits() const
 {
 #ifdef _DEBUG
-    T mask = -1;
-    int zeros = mBitCount - mWordCount * mWordSize;
+
+    T mask = -1; // 11111111
+
+    // 11100000
+    int ones = (mWordCount)* mWordSize - mBitCount;
+    int zeros = sizeof(T) * 8 - ones;
 
     mask <<= zeros;
 
@@ -255,21 +262,16 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
                                   FiniteField<T>& aCoefficient,
                                   FiniteField<T>& bCoefficient)
 {
-
     vector<FiniteField<T>*> remainders;
     vector<FiniteField<T>*> scalers;
 
     FiniteField<T> aCopy(a);
     FiniteField<T> bCopy(b);
 
-	FiniteField<T> z(a.mBitCount);
-
     remainders.push_back(&aCopy);
-    scalers.push_back(&z);
-
-	
     remainders.push_back(&bCopy);
-    scalers.push_back(&z);
+    scalers.push_back(nullptr);
+    scalers.push_back(nullptr);
 
     // Compute the Gcd
     int step = 1;
@@ -279,18 +281,15 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
 
         FiniteField<T>* leftHandSide = remainders[step - 1];
         FiniteField<T>* multiple     = remainders[step];
-
         FiniteField<T>* scaler       = new FiniteField<T>(a.mBitCount);
         FiniteField<T>* remainder    = new FiniteField<T>(a.mBitCount);
-
 
         division(*leftHandSide, *multiple, *scaler, *remainder);
 
 		//cout << *leftHandSide << " = " << *multiple << " * " << *scaler << " + " << *remainder << endl;
-        cout << (unsigned int)leftHandSide->num[0] << " = " << (unsigned int)multiple->num[0] << " * " << (unsigned int)scaler->num[0] << " + " << (unsigned int)remainder->num[0] << endl;
+        //cout << (unsigned int)leftHandSide->num[0] << " = " << (unsigned int)multiple->num[0] << " * " << (unsigned int)scaler->num[0] << " + " << (unsigned int)remainder->num[0] << endl;
         //testEq(*leftHandSide, *multiple, *scaler, *remainder);
 
-        cout << "rem " << *remainder << endl;
         scalers.push_back(scaler);
         remainders.push_back(remainder);
         step++;
@@ -334,10 +333,10 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
     FiniteField<T>::multiply(*leftSub, leftScale, leftProd);
     FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
     FiniteField<T>::add(leftProd, rightProd, temp);
-    if (FiniteField<T>::show){
-        cout << endl;
-        cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
-    }
+    //if (FiniteField<T>::show){
+    //    cout << endl;
+    //    cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+    //}
     assert(gcd == temp);
 #endif
 
@@ -361,10 +360,10 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
         FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
         FiniteField<T>::add(leftProd, rightProd, temp);
 
-        if (FiniteField<T>::show){
-            cout << endl;
-            cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
-        }
+        //if (FiniteField<T>::show){
+        //    cout << endl;
+        //    cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+        //}
         assert(gcd == temp);
 #endif
 
@@ -387,66 +386,22 @@ void FiniteField<T>::extGCD(const FiniteField<T>& a,
         FiniteField<T>::multiply(*rightSub, rightScale, rightProd);
         FiniteField<T>::add(leftProd, rightProd, temp);
 
-        cout << endl;
-        cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
+        //cout << endl;
+        //cout << (unsigned int)gcd(0) << " = " << (unsigned int)leftScale(0) << " * " << (unsigned int)leftSub->num[0] << " + " << (unsigned int)rightScale(0) << " * " << (unsigned int)rightSub->num[0] << endl;
 
         assert(gcd == temp);
 #endif
     }
 
     if (a == *leftSub){
-        cout << leftScale << " " << rightScale << endl;
         aCoefficient.steal(leftScale);
         bCoefficient.steal(rightScale);
-        cout << aCoefficient << " " << bCoefficient << endl;
     }
     else{
-        cout << leftScale << " " << rightScale << endl;
         aCoefficient.steal(rightScale);
         bCoefficient.steal(leftScale);
-        cout << bCoefficient << " " << aCoefficient << endl;
     }
 #pragma endregion
-}
-
-template<class T>
-void FiniteField<T>::bruteForceExtGCD(const FiniteField<T>& a, 
-								      const FiniteField<T>& b, 
-								            FiniteField<T>& gcd,
-                                            FiniteField<T>& aCoefficient,
-                                            FiniteField<T>& bCoefficient)
-{
-    assert(0);
-    bruteForceGCD(a,b,gcd);
-
-    aCoefficient.clear();
-    bCoefficient.clear();
-
-    aCoefficient(0) = 1;
-    bCoefficient(0) = 1;
-
-    FiniteField<T> aProd(a.mBitCount);
-    FiniteField<T> bProd(b.mBitCount);
-    FiniteField<T> sum(a.mBitCount);
-
-    while (true)
-    {
-
-        FiniteField<T>::multiply(a,aCoefficient, aProd);
-
-        while (true)
-        {
-            FiniteField<T>::multiply(b, bCoefficient, bProd);
-            
-            FiniteField<T>::add(aProd, bProd, sum);
-
-            if (sum == gcd) return;
-
-            bCoefficient++;
-        }
-
-        aCoefficient++;
-    }
 }
 
 template<class T>
@@ -486,14 +441,14 @@ void testEq(FiniteField<T>& lhs, FiniteField<T>& mul, FiniteField<T>& scl, Finit
 
 	FiniteField<T>::multiply(mul, scl, prod);
 	FiniteField<T>::add(prod, rem, sum);
-
-	if (! (sum == lhs))
+    assert(sum == lhs);
+	/*if (! (sum == lhs))
 	{
        
 		cout << "n eq " << lhs << endl;
 		cout << sum << " = " << mul << " * " << scl << " + " << rem << endl;
 		cout << prod << " = " << mul << " * " << scl << endl;
-	}
+	}*/
 #endif
 }
 
@@ -520,6 +475,11 @@ void FiniteField<T>::operator<<=(const int& shifts){
         s -= step;
         step = (s > mWordSize) ? mWordSize : s;
     }
+
+    // 00001111
+    T mask = ((T)-1) >> ((mWordCount)* mWordSize - mBitCount);
+    num[mWordCount - 1] &= mask;
+    assert(checkHighBits());
 }
 
 template<class T>
@@ -554,8 +514,10 @@ void FiniteField<T>::operator++(int)
 		if (num[i] != 0) return;
 	}
 
-    T mask = 2 * (mBitCount - mWordCount * mWordSize ) - 1;
-    num[mWordCount - 1] = num[mWordCount - 1] & mask;
+    // 00001111
+    T mask = ((T)-1) >> ((mWordCount)* mWordSize - mBitCount);
+    num[mWordCount - 1] &= mask;
+    assert(checkHighBits());
 }
 
 template<class T>
@@ -567,6 +529,8 @@ bool FiniteField<T>::operator==(const FiniteField<T>& cmp) const
     {
         if (num[i] != cmp(i)) return false;
     }
+
+    assert(checkHighBits());
     return true;
 }
 
@@ -617,6 +581,8 @@ void  FiniteField<T>::copy(const  FiniteField<T>& source)
     {
         num[i] = source(i);
     }
+
+    assert(checkHighBits());
 }
 
 template<class T>
@@ -628,36 +594,6 @@ void FiniteField<T>::steal(FiniteField<T>& source)
     num =  source.num;
     source.num = nullptr;
 }
-
-//template<class T>
-//void  FiniteField<T>::bitPrint()const
-//{
-//    bitPrint(-1);
-//}
-//
-//template<class T>
-//void  FiniteField<T>::bitPrint(int idx)const
-//{
-//
-//    HAPDLE hConsole = GetStdHandle(STD_OUTPUT_HAPDLE);
-//
-//    int curIdx = mWordCount * sizeof(T) * 8 - 1;
-//
-//	 FiniteField<T>::bitIterator bits = this->getMSB();
-//
-//	while (bits >= this->getLSB())
-//	{
-//        if (curIdx == idx )SetConsoleTextAttribute(hConsole, 2);
-//        
-//		cout << *bits;
-//		bits--;
-//
-//        if (curIdx == idx)SetConsoleTextAttribute(hConsole, 7);
-//        curIdx--;
-//	}
-//
-//    printf("'");
-//}
 
 template<class T>
 void  FiniteField<T>::print() const
@@ -678,24 +614,12 @@ bool  FiniteField<T>::isZero()const
     {
         if (num[i] != 0){
             result =  false;
-            cout << (unsigned int) num[i] << endl;
+            //cout << (unsigned int) num[i] << endl;
             break;
         }
     }
 
-#ifdef _DEBUG
-    
-    T mask = -1; // 11111111
-
-    // 11100000
-    int ones = (mWordCount)* mWordSize - mBitCount;
-    int zeros = sizeof(T) * 8 - ones;
-
-    mask <<= zeros;
-
-    assert(! (mask & num[mWordCount -1]) );
-
-#endif
+    assert(checkHighBits());
 
     return result;
 }
@@ -711,12 +635,23 @@ void  FiniteField<T>::randomize(){
         num[i] = (T)rand();
     }
     
+    // 00001111
+    T mask = ((T)-1) >> ( (mWordCount)* mWordSize - mBitCount );
+    num[mWordCount - 1] &= mask;
+    assert(checkHighBits());
+
 #else
     static std::default_random_engine generator;
     static std::uniform_int_distribution<T> distribution(0, (T)-1);
     for (int i = 0; i < mWordCount; i++){
         num[i] = distribution(generator);
     }
+
+    // 00001111
+    T mask = (T)-1 >> (mWordCount)* mWordSize - mBitCount;
+    num[mWordCount - 1] &= mask;
+    assert(checkHighBits());
+
 #endif
 }
 

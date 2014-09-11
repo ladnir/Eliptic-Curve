@@ -175,35 +175,6 @@ bool Tests<T>::testWikiBruteForceInverse()
 }
 
 template<class T>
-bool Tests<T>::testBruteForceGCD()
-{
-	FiniteField<T> a(9);
-	FiniteField<T> b(9);
-	//FiniteField<T> t1(9);
-	//FiniteField<T> t2(9);
-
-	FiniteField<T> gcd(9);
-
-	a(0) = 83;
-	b(0) = 202;
-
-	FiniteField<T>::bruteForceGCD(a, b, gcd);
-
-	FiniteField<T> aRem(9);
-	FiniteField<T> bRem(9);
-	FiniteField<T> quo(9);
-
-	FiniteField<T>::division(a, gcd, quo, aRem);
-	FiniteField<T>::division(b, gcd, quo, bRem);
-
-	assert(aRem.isZero() && bRem.isZero());
-
-	cout << gcd << endl;
-
-	return true;
-}
-
-template<class T>
 bool Tests<T>::testGCD()
 {
 	FiniteField<T> a(9);
@@ -220,7 +191,6 @@ bool Tests<T>::testGCD()
     b(0) = 202;
 
     FiniteField<T>::extGCD(a, b, gcd, aCo, bCo);
-    //FiniteField<T>::bruteForceExtGCD(a, b, gcd, aCo, bCo);
 
 	cout << "a " << a << endl;
 	cout << "b " << b << endl;
