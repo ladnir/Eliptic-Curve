@@ -62,13 +62,11 @@ bool Tests<T>::testMultiply()
 {
     bool result;
 
-    FiniteField<T> num1(16);
-    FiniteField<T> num2(16);
+    FiniteField<T> num1(16, Base2, "0000011000000111");
+    FiniteField<T> num2(16, base2, "0000000000000001");
     FiniteField<T> prod(16);
 
-    num1(0) = 7;
-    num1(1) = 4;
-    num2(0) = 1;
+
 
     FiniteField<T> prodTest(num1);
     
@@ -106,17 +104,57 @@ bool Tests<T>::testMultiply()
 template<class T>
 bool Tests<T>::testMultiply1()
 {
-    FiniteField<T> num1(16);
-    FiniteField<T> num2(16);
+    FiniteField<T> num1(16, Base2, "0010001100101001");
+    cout << "num1 " << num1 << endl;
+    FiniteField<T> num2(16, Base2, "0000000000000100");
+    cout << "num2 " << num2 << endl;
+
     FiniteField<T> prod(16);
 
-    num1(0) = 41;
-    num1(1) = 35;
-
-    num2(0) = 4;
     FiniteField<T>::multiply(num1, num2, prod);
     cout << prod << " = " << num1 << " * " << num2 << endl;
 
+    return true;
+}
+
+template<class T>
+bool Tests<T>::testMultiply2()
+{
+
+    FiniteField<T> num1(9, Base2,      "01010011"); // 83
+    FiniteField<T> num2(9, Base2,      "11001010"); // 202
+    FiniteField<T> knownProd(9, Base2, "00000001"); // 1
+    FiniteField<T> prod(9);
+
+    //FiniteField<T> quo(9);
+    //FiniteField<T> rem(9);
+    //FiniteField<T>::show = true;
+    FiniteField<T>::multiply(num1, num2, prod);
+
+    cout << "prod " << prod << endl;
+    cout << "Kprod " << knownProd << endl;
+
+    assert(knownProd == prod);
+    return true;
+}
+
+template<class T>
+bool Tests<T>::testMultiply3()
+{
+
+    FiniteField<T> num1(10, Base2, "01010011"); // 
+    FiniteField<T> num2(10);//, Base2, "11001010"); // 
+    FiniteField<T> knownProd(10, Base2, "00000001"); // 
+    FiniteField<T> prod(10);
+
+    FiniteField<T>::bruteForceInvert(num1,num2);
+
+    FiniteField<T>::multiply(num1, num2, prod);
+
+    cout << "prod " << prod << endl;
+    cout << "Kprod " << knownProd << endl;
+
+    assert(knownProd == prod);
     return true;
 }
 
@@ -125,17 +163,14 @@ bool Tests<T>::testWikiDivision()
 {
 
 
-    FiniteField<T> num1(9);
-    FiniteField<T> num2(9);
-
-    num1(0) = 83; // 01010011
-    num2(0) = 202; // 11001010
+    FiniteField<T> num1(9,Base2, "01010011"); // 83
+    FiniteField<T> num2(9,Base2, "11001010"); // 202
 
     //FiniteField<T> quo(9);
     //FiniteField<T> rem(9);
     FiniteField<T> prod(9);
-    FiniteField<T>::show = true;
-    FiniteField<T>::multiply(num1, num2, prod);
+    //FiniteField<T>::show = true;
+    FiniteField<T>::division(num1, num2, prod);
 
     cout << prod << endl;
 
@@ -145,12 +180,9 @@ bool Tests<T>::testWikiDivision()
 template<class T>
 bool Tests<T>::testWikiInverse()
 {
-    FiniteField<T> base(9);
+    FiniteField<T> base(9, Base2, "01010011"); // 83
+    FiniteField<T> knownInv(9, Base2, "11001010"); // 202
     FiniteField<T> inv(9);
-    FiniteField<T> knownInv(9);
-
-    base(0) = 83;
-    knownInv(0) = 202;
 
     FiniteField<T>::invert(base, inv);
 
@@ -161,12 +193,9 @@ bool Tests<T>::testWikiInverse()
 template<class T>
 bool Tests<T>::testWikiBruteForceInverse()
 {
-    FiniteField<T> base(9);
+    FiniteField<T> base(9, Base2, "01010011"); // 83
+    FiniteField<T> knownInv(9, Base2, "11001010"); // 202
     FiniteField<T> inv(9);
-    FiniteField<T> knownInv(9);
-
-    base(0) = 83;
-    knownInv(0) = 202;
 
     FiniteField<T>::bruteForceInvert(base, inv);
 
@@ -177,18 +206,16 @@ bool Tests<T>::testWikiBruteForceInverse()
 template<class T>
 bool Tests<T>::testGCD()
 {
-    FiniteField<T> a(9);
-    FiniteField<T> b(9);
-    FiniteField<T> gcd(9);
-    FiniteField<T> aCo(9);
-    FiniteField<T> bCo(9);
+    FiniteField<T> a(10, Base2, "01010011"); // 83
+    FiniteField<T> b(10, Base2, "11001010"); // 202
+    FiniteField<T> gcd(10);
+    FiniteField<T> aCo(10);
+    FiniteField<T> bCo(10);
 
-    FiniteField<T> aProd(9);
-    FiniteField<T> bProd(9);
-    FiniteField<T> sum(9);
+    FiniteField<T> aProd(10);
+    FiniteField<T> bProd(10);
+    FiniteField<T> sum(10);
 
-    a(0) = 83;
-    b(0) = 202;
 
     FiniteField<T>::extGCD(a, b, gcd, aCo, bCo);
 
@@ -219,25 +246,58 @@ bool Tests<T>::testGCD()
 template<class T>
 bool Tests<T>::testGCDvsBFInverse()
 {
-    FiniteField<T> a(9);
-    FiniteField<T> aInverse(9);
-    FiniteField<T> aBFInverse(9);
-    FiniteField<T> gcd(9);
-
-    FiniteField<T>& irrPoly = FiniteField<T>::getIrrPoly(9);
-    FiniteField<T> irrPolyCo(9);
-
-    for (int i = 0; i < 10000; i++)
     {
-        a.randomize();
-        if (a.isZero()) continue;
+        FiniteField<T> a(9);
+        FiniteField<T> aInverse(9);
+        FiniteField<T> aBFInverse(9);
+        FiniteField<T> gcd(9);
 
-        FiniteField<T>::bruteForceInvert(a,aBFInverse);
+        FiniteField<T>& irrPoly = FiniteField<T>::getIrrPoly(9);
+        FiniteField<T> irrPolyCo(9);
 
-        FiniteField<T>::extGCD(irrPoly, a, gcd, irrPolyCo, aInverse);
+        for (int i = 0; i < 10000; i++)
+        {
+            a.randomize();
+            if (a.isZero()) continue;
 
-        assert(aBFInverse == aInverse);
+            FiniteField<T>::bruteForceInvert(a,aBFInverse);
 
+            FiniteField<T>::extGCD(irrPoly, a, gcd, irrPolyCo, aInverse);
+
+            if (!(aBFInverse == aInverse)){
+                cout << "bf Inverse  = " << aBFInverse << endl;
+                cout << "gcd Inverse = " << aInverse << endl;
+
+            assert( 0 && "testGCDvsBFInverse test failed");
+            }
+        }
     }
+
+    int memLeaks = FiniteField<T>::aMals - (int)((map<int, FiniteField<T>*>*)FiniteField<T>::irrPolys)->size();
+    assert(memLeaks == 0);
+
     return true;
+}
+
+template<class T>
+bool Tests<T>::testIsReducable()
+{
+    FiniteField<T>& knownIrrPoly = FiniteField<T>::getIrrPoly(9);
+    //FiniteField<T> knownIrrPoly(9);
+    //knownIrrPoly(0) = 7;
+
+    assert(!knownIrrPoly.isReducable());
+    return !knownIrrPoly.isReducable();
+}
+
+template<class T>
+bool Tests<T>::testFindIrrPoly()
+{
+    FiniteField<T>& knownIrrPoly = FiniteField<T>::getIrrPoly(9);
+    FiniteField<T> irrPoly(9);
+
+    FiniteField<T>::findIrrPoly(irrPoly);
+
+    assert(knownIrrPoly == irrPoly);
+    return (knownIrrPoly == irrPoly);
 }

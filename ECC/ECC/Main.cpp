@@ -7,12 +7,14 @@
 
 
 int main(int argc, char* argv){
-    typedef uint8_t T;
+    typedef uint64_t T;
 
 	//Tests<T>::testBruteForceGCD();
-    //Tests<T>::testGCD();
-	//Tests<T>::testMultiply1();
-    Tests<T>::testGCDvsBFInverse();
+    Tests<T>::testGCD();
+    //Tests<T>::testMultiply3();
+    //Tests<T>::testGCDvsBFInverse();
+    Tests<T>::testIsReducable();
+    Tests<T>::testFindIrrPoly();
 
     return 1;
 }

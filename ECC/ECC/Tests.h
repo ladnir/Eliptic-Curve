@@ -8,7 +8,9 @@ public:
 	static bool runAll();
 
 	static bool testMultiply();
-	static bool testMultiply1();
+    static bool testMultiply1();
+    static bool testMultiply2();
+    static bool testMultiply3();
 
 	static bool testWikiDivision();
 	static bool testWikiInverse();
@@ -20,5 +22,9 @@ public:
 
     static bool testGCDvsInverse();
     static bool testGCDvsBFInverse();
+
+    static bool testIsReducable();
+    static bool testFindIrrPoly();
+
 };
 

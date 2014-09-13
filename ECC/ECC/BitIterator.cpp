@@ -54,7 +54,7 @@ bool BitIterator<T>::operator*() const
 }
 
 template<class T>
-void BitIterator<T>::operator++(int)
+BitIterator<T>& BitIterator<T>::operator++()
 {
 	if (mBitIdx != mField.mWordSize - 1){
 		// shift the mask inside a word
@@ -68,10 +68,12 @@ void BitIterator<T>::operator++(int)
 		mMask = 1;
 	}
 	//__asm{ rol mMask, 1 }
+
+    return *this;
 }
 
 template<class T>
-void BitIterator<T>::operator--(int)
+BitIterator<T>& BitIterator<T>::operator--()
 {
 	if (mBitIdx != 0){
 		// shift the mask inside a word
@@ -83,9 +85,11 @@ void BitIterator<T>::operator--(int)
 		//	of the next work
 		mWordIdx--;
 		mBitIdx = mField.mWordSize - 1;
-		mMask = (T) (1 << (sizeof(T) * 8 - 1));
+		mMask = (T) (1 << (mField.mWordSize - 1));
 	}
 	//__asm{ ror mMask, 1 }
+
+    return *this;
 }
 
 template<class T>

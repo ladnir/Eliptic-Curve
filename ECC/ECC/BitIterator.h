@@ -15,8 +15,8 @@ public:
 	bool hasGreaterBits() const;
 
 	inline bool operator*() const;
-	void operator++(int);
-	void operator--(int);
+	BitIterator<T>& operator++();
+    BitIterator<T>& operator--();
 
 	bool operator<=(const BitIterator<T>&) const;
 	bool operator>=(const BitIterator<T>&) const;
