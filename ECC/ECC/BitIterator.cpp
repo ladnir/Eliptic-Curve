@@ -1,9 +1,9 @@
 #include "BitIterator.h"
-//#include "FiniteFields.cpp"
+//#include "Fields.cpp"
 #include <windows.h> // WinApi header
 
 template<class T>
-BitIterator<T>::BitIterator(const FiniteField<T>& field) 
+BitIterator<T>::BitIterator(const Field<T>& field) 
 							: mField(field)
 							, mWordIdx(0)
 							, mBitIdx(0)

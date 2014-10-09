@@ -1,16 +1,17 @@
 #pragma once
-#include "FiniteFields.h"
+#include "Fields.h"
 
 template<class T>
 class BitIterator
 {
 public:
-	BitIterator(const FiniteField<T>&);
+	BitIterator(const Field<T>&);
 
 	void goToBit(const int&);
 	void goToMSB();
 	void goToLSB();
-
+    
+    bool isInRnage() const;
 	bool hasLesserBits() const;
 	bool hasGreaterBits() const;
 
@@ -27,7 +28,7 @@ public:
 	//void clearBit();
 
 private:
-	const FiniteField<T>& mField;
+	const Field<T>& mField;
 	T mMask;
 	int mWordIdx;
 	int mBitIdx;

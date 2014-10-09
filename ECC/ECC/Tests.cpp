@@ -1,6 +1,6 @@
 #include "Tests.h"
 
-#include "FiniteFields.cpp"
+#include "Fields.cpp"
 
 template<class T>
 bool Tests<T>::runAll()
@@ -18,27 +18,27 @@ template<class T>
 bool Tests<T>::testMultDivide()
 {
 
-        FiniteField<T> num1(16);
-        FiniteField<T> num2(16);
-        FiniteField<T> prod(16);
+        Field<T> num1(16);
+        Field<T> num2(16);
+        Field<T> prod(16);
 
         num1(0) = 14;
         num2(0) = 9;
 
-        FiniteField<T>::multiply(num1, num2, prod);
+        Field<T>::multiply(num1, num2, prod);
 
-        FiniteField<T> quo(16);
-        FiniteField<T> rem(16);
+        Field<T> quo(16);
+        Field<T> rem(16);
 
 
-        FiniteField<T>::division(prod, num2, quo, rem);
+        Field<T>::division(prod, num2, quo, rem);
 
         if (!(rem.isZero()) || !(quo == num1))
         {
-            FiniteField<T>::show = true;
-            FiniteField<T>::multiply(num1, num2, prod);
-            FiniteField<T>::division(prod, num2, quo, rem);
-            FiniteField<T>::show = false;
+            Field<T>::show = true;
+            Field<T>::multiply(num1, num2, prod);
+            Field<T>::division(prod, num2, quo, rem);
+            Field<T>::show = false;
 
             cout << endl;
             cout << "  " << num1 << endl;
@@ -62,26 +62,26 @@ bool Tests<T>::testMultiply()
 {
     bool result;
 
-    FiniteField<T> num1(16, Base2, "0000011000000111");
-    FiniteField<T> num2(16, base2, "0000000000000001");
-    FiniteField<T> prod(16);
+    Field<T> num1(16, Base2, "0000011000000111");
+    Field<T> num2(16, base2, "0000000000000001");
+    Field<T> prod(16);
 
 
 
-    FiniteField<T> prodTest(num1);
+    Field<T> prodTest(num1);
     
 
     while (!*prod.getMSB())
     {
-        FiniteField<T>::multiply(num1, num2, prod);
+        Field<T>::multiply(num1, num2, prod);
 
         result = prod == prodTest;
 
         if (!result)
         {
-            FiniteField<T>::show = true;
-            FiniteField<T>::multiply(num1, num2, prod);
-            FiniteField<T>::show = false;
+            Field<T>::show = true;
+            Field<T>::multiply(num1, num2, prod);
+            Field<T>::show = false;
 
             cout << "  " << num1 << endl;
             cout << "* " << num2 << endl;
@@ -104,14 +104,14 @@ bool Tests<T>::testMultiply()
 template<class T>
 bool Tests<T>::testMultiply1()
 {
-    FiniteField<T> num1(16, Base2, "0010001100101001");
+    Field<T> num1(16, Base2, "0010001100101001");
     cout << "num1 " << num1 << endl;
-    FiniteField<T> num2(16, Base2, "0000000000000100");
+    Field<T> num2(16, Base2, "0000000000000100");
     cout << "num2 " << num2 << endl;
 
-    FiniteField<T> prod(16);
+    Field<T> prod(16);
 
-    FiniteField<T>::multiply(num1, num2, prod);
+    Field<T>::multiply(num1, num2, prod);
     cout << prod << " = " << num1 << " * " << num2 << endl;
 
     return true;
@@ -121,15 +121,15 @@ template<class T>
 bool Tests<T>::testMultiply2()
 {
 
-    FiniteField<T> num1(9, Base2,      "01010011"); // 83
-    FiniteField<T> num2(9, Base2,      "11001010"); // 202
-    FiniteField<T> knownProd(9, Base2, "00000001"); // 1
-    FiniteField<T> prod(9);
+    Field<T> num1(9, Base2,      "01010011"); // 83
+    Field<T> num2(9, Base2,      "11001010"); // 202
+    Field<T> knownProd(9, Base2, "00000001"); // 1
+    Field<T> prod(9);
 
-    //FiniteField<T> quo(9);
-    //FiniteField<T> rem(9);
-    //FiniteField<T>::show = true;
-    FiniteField<T>::multiply(num1, num2, prod);
+    //Field<T> quo(9);
+    //Field<T> rem(9);
+    //Field<T>::show = true;
+    Field<T>::multiply(num1, num2, prod);
 
     cout << "prod " << prod << endl;
     cout << "Kprod " << knownProd << endl;
@@ -142,14 +142,14 @@ template<class T>
 bool Tests<T>::testMultiply3()
 {
 
-    FiniteField<T> num1(10, Base2, "01010011"); // 
-    FiniteField<T> num2(10);//, Base2, "11001010"); // 
-    FiniteField<T> knownProd(10, Base2, "00000001"); // 
-    FiniteField<T> prod(10);
+    Field<T> num1(10, Base2, "01010011"); // 
+    Field<T> num2(10);//, Base2, "11001010"); // 
+    Field<T> knownProd(10, Base2, "00000001"); // 
+    Field<T> prod(10);
 
-    FiniteField<T>::bruteForceInvert(num1,num2);
+    Field<T>::bruteForceInvert(num1,num2);
 
-    FiniteField<T>::multiply(num1, num2, prod);
+    Field<T>::multiply(num1, num2, prod);
 
     cout << "prod " << prod << endl;
     cout << "Kprod " << knownProd << endl;
@@ -163,14 +163,14 @@ bool Tests<T>::testWikiDivision()
 {
 
 
-    FiniteField<T> num1(9,Base2, "01010011"); // 83
-    FiniteField<T> num2(9,Base2, "11001010"); // 202
+    Field<T> num1(9,Base2, "01010011"); // 83
+    Field<T> num2(9,Base2, "11001010"); // 202
 
-    //FiniteField<T> quo(9);
-    //FiniteField<T> rem(9);
-    FiniteField<T> prod(9);
-    //FiniteField<T>::show = true;
-    FiniteField<T>::division(num1, num2, prod);
+    //Field<T> quo(9);
+    //Field<T> rem(9);
+    Field<T> prod(9);
+    //Field<T>::show = true;
+    Field<T>::division(num1, num2, prod);
 
     cout << prod << endl;
 
@@ -180,11 +180,11 @@ bool Tests<T>::testWikiDivision()
 template<class T>
 bool Tests<T>::testWikiInverse()
 {
-    FiniteField<T> base(9, Base2, "01010011"); // 83
-    FiniteField<T> knownInv(9, Base2, "11001010"); // 202
-    FiniteField<T> inv(9);
+    Field<T> base(9, Base2, "01010011"); // 83
+    Field<T> knownInv(9, Base2, "11001010"); // 202
+    Field<T> inv(9);
 
-    FiniteField<T>::invert(base, inv);
+    Field<T>::invert(base, inv);
 
     assert(inv == knownInv);
     return inv == knownInv;
@@ -193,11 +193,11 @@ bool Tests<T>::testWikiInverse()
 template<class T>
 bool Tests<T>::testWikiBruteForceInverse()
 {
-    FiniteField<T> base(9, Base2, "01010011"); // 83
-    FiniteField<T> knownInv(9, Base2, "11001010"); // 202
-    FiniteField<T> inv(9);
+    Field<T> base(9, Base2, "01010011"); // 83
+    Field<T> knownInv(9, Base2, "11001010"); // 202
+    Field<T> inv(9);
 
-    FiniteField<T>::bruteForceInvert(base, inv);
+    Field<T>::bruteForceInvert(base, inv);
 
     assert(inv == knownInv);
     return inv == knownInv;
@@ -206,18 +206,18 @@ bool Tests<T>::testWikiBruteForceInverse()
 template<class T>
 bool Tests<T>::testGCD()
 {
-    FiniteField<T> a(10, Base2, "01010011"); // 83
-    FiniteField<T> b(10, Base2, "11001010"); // 202
-    FiniteField<T> gcd(10);
-    FiniteField<T> aCo(10);
-    FiniteField<T> bCo(10);
+    Field<T> a(10, Base2, "01010011"); // 83
+    Field<T> b(10, Base2, "11001010"); // 202
+    Field<T> gcd(10);
+    Field<T> aCo(10);
+    Field<T> bCo(10);
 
-    FiniteField<T> aProd(10);
-    FiniteField<T> bProd(10);
-    FiniteField<T> sum(10);
+    Field<T> aProd(10);
+    Field<T> bProd(10);
+    Field<T> sum(10);
 
 
-    FiniteField<T>::extGCD(a, b, gcd, aCo, bCo);
+    Field<T>::extGCD(a, b, gcd, aCo, bCo);
 
     cout << "a " << a << endl;
     cout << "b " << b << endl;
@@ -225,10 +225,10 @@ bool Tests<T>::testGCD()
     cout << "aCo " << aCo << endl;
     cout << "bCo " << bCo << endl;
 
-    FiniteField<T>::multiply(a, aCo, aProd);
-    FiniteField<T>::multiply(b, bCo, bProd);
+    Field<T>::multiply(a, aCo, aProd);
+    Field<T>::multiply(b, bCo, bProd);
 
-    FiniteField<T>::add(aProd, bProd, sum);
+    Field<T>::add(aProd, bProd, sum);
 
     cout << endl;
     cout << "aPo " << aProd << endl;
@@ -247,22 +247,22 @@ template<class T>
 bool Tests<T>::testGCDvsBFInverse()
 {
     {
-        FiniteField<T> a(9);
-        FiniteField<T> aInverse(9);
-        FiniteField<T> aBFInverse(9);
-        FiniteField<T> gcd(9);
+        Field<T> a(9);
+        Field<T> aInverse(9);
+        Field<T> aBFInverse(9);
+        Field<T> gcd(9);
 
-        FiniteField<T>& irrPoly = FiniteField<T>::getIrrPoly(9);
-        FiniteField<T> irrPolyCo(9);
+        Field<T>& irrPoly = Field<T>::getIrrPoly(9);
+        Field<T> irrPolyCo(9);
 
         for (int i = 0; i < 10000; i++)
         {
             a.randomize();
             if (a.isZero()) continue;
 
-            FiniteField<T>::bruteForceInvert(a,aBFInverse);
+            Field<T>::bruteForceInvert(a,aBFInverse);
 
-            FiniteField<T>::extGCD(irrPoly, a, gcd, irrPolyCo, aInverse);
+            Field<T>::extGCD(irrPoly, a, gcd, irrPolyCo, aInverse);
 
             if (!(aBFInverse == aInverse)){
                 cout << "bf Inverse  = " << aBFInverse << endl;
@@ -273,7 +273,7 @@ bool Tests<T>::testGCDvsBFInverse()
         }
     }
 
-    int memLeaks = FiniteField<T>::aMals - (int)((map<int, FiniteField<T>*>*)FiniteField<T>::irrPolys)->size();
+    int memLeaks = Field<T>::aMals - (int)((map<int, Field<T>*>*)Field<T>::irrPolys)->size();
     assert(memLeaks == 0);
 
     return true;
@@ -282,8 +282,8 @@ bool Tests<T>::testGCDvsBFInverse()
 template<class T>
 bool Tests<T>::testIsReducable()
 {
-    FiniteField<T>& knownIrrPoly = FiniteField<T>::getIrrPoly(9);
-    //FiniteField<T> knownIrrPoly(9);
+    Field<T>& knownIrrPoly = Field<T>::getIrrPoly(9);
+    //Field<T> knownIrrPoly(9);
     //knownIrrPoly(0) = 7;
 
     assert(!knownIrrPoly.isReducable());
@@ -293,10 +293,10 @@ bool Tests<T>::testIsReducable()
 template<class T>
 bool Tests<T>::testFindIrrPoly()
 {
-    FiniteField<T>& knownIrrPoly = FiniteField<T>::getIrrPoly(9);
-    FiniteField<T> irrPoly(9);
+    Field<T>& knownIrrPoly = Field<T>::getIrrPoly(9);
+    Field<T> irrPoly(9);
 
-    FiniteField<T>::findIrrPoly(irrPoly);
+    Field<T>::findIrrPoly(irrPoly);
 
     assert(knownIrrPoly == irrPoly);
     return (knownIrrPoly == irrPoly);

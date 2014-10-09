@@ -117,12 +117,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BitIterator.h" />
-    <ClInclude Include="FiniteFields.h" />
+    <ClInclude Include="ECPoint.h" />
+    <ClInclude Include="Fields.h" />
     <ClInclude Include="Tests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitIterator.cpp" />
-    <ClCompile Include="FiniteFields.cpp" />
+    <ClCompile Include="ECPoint.cpp" />
+    <ClCompile Include="Fields.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Tests.cpp" />
   </ItemGroup>
