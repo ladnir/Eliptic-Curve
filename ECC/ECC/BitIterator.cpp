@@ -16,7 +16,7 @@ void BitIterator<T>::goToBit(const int& idx)
 	mBitIdx = idx % mField.mWordSize;
 	mWordIdx = idx / mField.mWordSize;
 
-	mMask <<= mBitIdx;
+	mMask = 1 << mBitIdx;
 }
 
 template<class T>
